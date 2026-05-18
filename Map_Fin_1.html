@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Путь Айдоса — Астана</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cream: #FFF8EC;
+            --warm-brown: #8B5E3C;
+            --gold: #E8B84B;
+            --sky: #87CEEB;
+            --grass: #6DBF67;
+            --coral: #FF7F5C;
+            --navy: #2B4C8C;
+            --paper: #FDEEC8;
+            --ink: #3A2A14;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--cream);
+            min-height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* === HEADER === */
+        #header {
+            width: 100%;
+            background: var(--navy);
+            padding: 10px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 1000;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.2);
+        }
+        #header h1 {
+            font-family: 'Baloo 2', cursive;
+            color: var(--gold);
+            font-size: 1.3rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+        #header .subtitle {
+            color: rgba(255,255,255,0.75);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        #step-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .step-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .step-dot.active {
+            background: var(--gold);
+            width: 24px;
+            border-radius: 5px;
+        }
+        .step-dot.done {
+            background: rgba(232, 184, 75, 0.5);
+        }
+
+        /* === MAIN LAYOUT === */
+        #main {
+            display: flex;
+            width: 100%;
+            height: calc(100vh - 52px);
+            position: relative;
+        }
+
+        /* === MAP === */
+        #map {
+            flex: 1;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Map tiles cartoon style overlay */
+        #map::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(255,248,236,0.15);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* === SIDE PANEL === */
+        #side-panel {
+            width: 340px;
+            height: 100%;
+            background: var(--paper);
+            border-left: 3px solid var(--warm-brown);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            z-index: 50;
+            box-shadow: -4px 0 20px rgba(0,0,0,0.1);
+        }
+
+        /* Paper texture lines */
+        #side-panel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: repeating-linear-gradient(
+                transparent,
+                transparent 27px,
+                rgba(139,94,60,0.07) 27px,
+                rgba(139,94,60,0.07) 28px
+            );
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* === SLIDES === */
+        #slides-wrapper {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            inset: 0;
+            padding: 20px 22px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+            transform: translateX(60px);
+            transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: auto;
+        }
+        .slide.exit-left {
+            opacity: 0;
+            transform: translateX(-60px);
+        }
+
+        /* Character illustration */
+        .char-container {
+            width: 160px;
+            height: 160px;
+            position: relative;
+            margin-bottom: 8px;
+            flex-shrink: 0;
+        }
+
+        .char-container svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.12));
+        }
+
+        /* Bounce animation for character */
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        .char-container.bouncing svg {
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        /* Stars / sparkle for character */
+        .sparkle {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-size: 1.2rem;
+            animation: spin 3s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .slide-age-badge {
+            background: var(--gold);
+            color: var(--ink);
+            font-family: 'Baloo 2', cursive;
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 3px 10px;
+            border-radius: 20px;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .slide h2 {
+            font-family: 'Baloo 2', cursive;
+            color: var(--warm-brown);
+            font-size: 1.2rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 4px;
+            line-height: 1.2;
+        }
+
+        .slide .location-tag {
+            font-size: 0.7rem;
+            color: var(--navy);
+            font-weight: 700;
+            background: rgba(43,76,140,0.1);
+            padding: 3px 10px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+        }
+
+        .slide p {
+            font-size: 0.82rem;
+            color: var(--ink);
+            line-height: 1.5;
+            text-align: center;
+            max-width: 280px;
+        }
+
+        .slide .emoji-row {
+            font-size: 1.3rem;
+            margin: 8px 0;
+            letter-spacing: 4px;
+        }
+
+        /* Skills tags */
+        .skills-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .skill-tag {
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 12px;
+            border: 2px solid;
+        }
+
+        /* === NAVIGATION === */
+        #nav-area {
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255,255,255,0.5);
+            border-top: 2px solid rgba(139,94,60,0.15);
+            z-index: 2;
+            flex-shrink: 0;
+        }
+
+        .nav-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 3px solid var(--warm-brown);
+            background: white;
+            color: var(--warm-brown);
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Baloo 2', cursive;
+            font-weight: 800;
+            user-select: none;
+        }
+        .nav-btn:hover {
+            background: var(--warm-brown);
+            color: white;
+            transform: scale(1.08);
+        }
+        .nav-btn:disabled {
+            opacity: 0.25;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .nav-btn:active {
+            transform: scale(0.95);
+        }
+
+        #progress-text {
+            font-family: 'Baloo 2', cursive;
+            font-size: 0.85rem;
+            color: var(--warm-brown);
+            font-weight: 700;
+            text-align: center;
+        }
+        #progress-text .progress-num {
+            font-size: 1.4rem;
+            color: var(--navy);
+            display: block;
+        }
+
+        /* === MAP POPUP custom === */
+        .leaflet-popup-content-wrapper {
+            background: var(--paper) !important;
+            border: 2px solid var(--warm-brown) !important;
+            border-radius: 12px !important;
+            font-family: 'Nunito', sans-serif !important;
+        }
+        .leaflet-popup-content {
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--ink);
+        }
+        .leaflet-popup-tip {
+            background: var(--warm-brown) !important;
+        }
+
+        /* === DOTTED PATH LINE on map === */
+        .path-line {
+            stroke: var(--warm-brown);
+            stroke-dasharray: 8, 5;
+        }
+
+        /* === KEYBOARD HINT === */
+        #key-hint {
+            position: absolute;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(43,76,140,0.85);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 5px 14px;
+            border-radius: 20px;
+            z-index: 100;
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        /* Decorative corner ornament */
+        .ornament {
+            position: absolute;
+            opacity: 0.15;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+<div id="header">
+    <div>
+        <h1>🗺️ Путь Айдоса</h1>
+        <div class="subtitle">Астана — от садика до финансового центра</div>
+    </div>
+    <div id="step-indicator"></div>
+</div>
+
+<div id="main">
+    <div id="map"></div>
+    <div id="side-panel">
+        <div id="slides-wrapper">
+            <!-- Slides injected by JS -->
+        </div>
+        <div id="nav-area">
+            <button class="nav-btn" id="btn-prev">◀</button>
+            <div id="progress-text">
+                <span class="progress-num"><span id="cur">1</span> / <span id="tot">7</span></span>
+                Шаг пути
+            </div>
+            <button class="nav-btn" id="btn-next">▶</button>
+        </div>
+    </div>
+</div>
+
+<div id="key-hint">← → клавиши или кнопки для навигации</div>
+
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script>
+// ============================================================
+//  SVG CHARACTERS — inline drawn characters for each stage
+// ============================================================
+
+const characters = {
+
+// 1. TODDLER - cute baby with backpack
+kindergarten: `<svg viewBox="0 0 160 180" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="80" cy="100" r="70" fill="#E8F4FD" opacity="0.5"/>
+  <!-- Legs -->
+  <rect x="62" y="130" width="14" height="26" rx="7" fill="#4A90D9"/>
+  <rect x="82" y="130" width="14" height="26" rx="7" fill="#4A90D9"/>
+  <!-- Shoes -->
+  <ellipse cx="69" cy="157" rx="10" ry="6" fill="#2B2B2B"/>
+  <ellipse cx="89" cy="157" rx="10" ry="6" fill="#2B2B2B"/>
+  <!-- Body -->
+  <rect x="55" y="90" width="50" height="45" rx="14" fill="#FF9F5A"/>
+  <!-- Kazakh pattern strip -->
+  <rect x="55" y="108" width="50" height="8" fill="#E07030" rx="2"/>
+  <text x="80" y="116" text-anchor="middle" font-size="5" fill="#FFD700" font-weight="bold">❖ ❖ ❖ ❖ ❖</text>
+  <!-- Arms -->
+  <rect x="35" y="93" width="24" height="12" rx="6" fill="#FF9F5A"/>
+  <rect x="101" y="93" width="24" height="12" rx="6" fill="#FF9F5A"/>
+  <!-- Tiny backpack -->
+  <rect x="95" y="88" width="20" height="22" rx="4" fill="#FFD700" stroke="#E8B84B" stroke-width="2"/>
+  <rect x="98" y="91" width="6" height="10" rx="2" fill="#E8B84B"/>
+  <!-- Head -->
+  <circle cx="80" cy="72" r="28" fill="#F5C99A"/>
+  <!-- Hair -->
+  <path d="M54,65 Q56,42 80,40 Q104,42 106,65" fill="#3A2A14"/>
+  <path d="M54,65 Q50,60 52,55 Q55,50 57,58" fill="#3A2A14"/>
+  <!-- Eyes - big cute -->
+  <ellipse cx="70" cy="72" rx="7" ry="8" fill="white"/>
+  <ellipse cx="90" cy="72" rx="7" ry="8" fill="white"/>
+  <circle cx="71" cy="73" r="4.5" fill="#3A2A14"/>
+  <circle cx="91" cy="73" r="4.5" fill="#3A2A14"/>
+  <circle cx="72.5" cy="71.5" r="1.5" fill="white"/>
+  <circle cx="92.5" cy="71.5" r="1.5" fill="white"/>
+  <!-- Blush -->
+  <circle cx="62" cy="80" r="5" fill="#FFAAA0" opacity="0.6"/>
+  <circle cx="98" cy="80" r="5" fill="#FFAAA0" opacity="0.6"/>
+  <!-- Smile -->
+  <path d="M72,83 Q80,90 88,83" stroke="#D07050" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Toy ball -->
+  <circle cx="45" cy="105" r="10" fill="#FF6B6B"/>
+  <path d="M36,102 Q45,98 54,102" stroke="white" stroke-width="1.5" fill="none"/>
+  <path d="M38,108 Q45,112 52,108" stroke="white" stroke-width="1.5" fill="none"/>
+  <!-- Age: 4 years text badge -->
+  <rect x="8" y="8" width="40" height="20" rx="10" fill="#FF9F5A"/>
+  <text x="28" y="22" text-anchor="middle" font-size="9" fill="white" font-weight="bold" font-family="Nunito, sans-serif">4 года</text>
+</svg>`,
+
+// 2. PRIMARY SCHOOL KID
+school: `<svg viewBox="0 0 160 180" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="80" cy="100" r="70" fill="#FFF0E0" opacity="0.5"/>
+  <!-- Legs -->
+  <rect x="62" y="132" width="14" height="28" rx="7" fill="#2B4C8C"/>
+  <rect x="84" y="132" width="14" height="28" rx="7" fill="#2B4C8C"/>
+  <ellipse cx="69" cy="161" rx="11" ry="6" fill="#3A2A14"/>
+  <ellipse cx="91" cy="161" rx="11" ry="6" fill="#3A2A14"/>
+  <!-- Body - school uniform -->
+  <rect x="54" y="88" width="52" height="49" rx="14" fill="#2B4C8C"/>
+  <!-- White shirt collar -->
+  <path d="M74,88 L80,96 L86,88" fill="white" stroke="white" stroke-width="1"/>
+  <!-- Tie -->
+  <path d="M78,90 L80,104 L82,90" fill="#E8B84B"/>
+  <!-- Arms -->
+  <rect x="33" y="91" width="25" height="13" rx="6.5" fill="#2B4C8C"/>
+  <rect x="102" y="91" width="25" height="13" rx="6.5" fill="#2B4C8C"/>
+  <!-- Big school backpack -->
+  <rect x="98" y="82" width="26" height="32" rx="6" fill="#FF7F5C" stroke="#E06040" stroke-width="2"/>
+  <rect x="101" y="85" width="8" height="14" rx="3" fill="#E06040"/>
+  <circle cx="116" cy="98" r="3" fill="#E06040"/>
+  <!-- Book -->
+  <rect x="33" y="97" width="18" height="22" rx="3" fill="#6DBF67" stroke="#4A9F47" stroke-width="2"/>
+  <line x1="42" y1="99" x2="42" y2="117" stroke="#4A9F47" stroke-width="1.5"/>
+  <!-- Head -->
+  <circle cx="80" cy="70" r="28" fill="#F5C99A"/>
+  <!-- Hair -->
+  <path d="M54,63 Q56,40 80,38 Q104,40 106,63" fill="#3A2A14"/>
+  <!-- Eyes - more mature -->
+  <ellipse cx="70" cy="70" rx="6.5" ry="7" fill="white"/>
+  <ellipse cx="90" cy="70" rx="6.5" ry="7" fill="white"/>
+  <circle cx="71" cy="71" r="4" fill="#3A2A14"/>
+  <circle cx="91" cy="71" r="4" fill="#3A2A14"/>
+  <circle cx="72" cy="69.5" r="1.5" fill="white"/>
+  <circle cx="92" cy="69.5" r="1.5" fill="white"/>
+  <!-- Eyebrows determined -->
+  <path d="M65,62 Q70,59 75,62" stroke="#3A2A14" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M85,62 Q90,59 95,62" stroke="#3A2A14" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <!-- Blush -->
+  <circle cx="62" cy="77" r="4.5" fill="#FFAAA0" opacity="0.5"/>
+  <circle cx="98" cy="77" r="4.5" fill="#FFAAA0" opacity="0.5"/>
+  <!-- Smile confident -->
+  <path d="M73,80 Q80,87 87,80" stroke="#D07050" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Age badge -->
+  <rect x="8" y="8" width="40" height="20" rx="10" fill="#2B4C8C"/>
+  <text x="28" y="22" text-anchor="middle" font-size="9" fill="white" font-weight="bold" font-family="Nunito">7 лет</text>
+</svg>`,
+
+// 3. MUSIC SCHOOL - with dombra
+music: `<svg viewBox="0 0 160 190" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="80" cy="105" r="70" fill="#FFF0F5" opacity="0.5"/>
+  <!-- Legs -->
+  <rect x="62" y="140" width="13" height="26" rx="6.5" fill="#2B4C8C"/>
+  <rect x="84" y="140" width="13" height="26" rx="6.5" fill="#2B4C8C"/>
+  <ellipse cx="68.5" cy="167" rx="10" ry="6" fill="#3A2A14"/>
+  <ellipse cx="90.5" cy="167" rx="10" ry="6" fill="#3A2A14"/>
+  <!-- Body -->
+  <rect x="55" y="96" width="50" height="49" rx="14" fill="#9B59B6"/>
+  <!-- Kazakh music school collar -->
+  <path d="M74,96 L80,104 L86,96" fill="#E8B84B"/>
+  <!-- Arms -->
+  <rect x="34" y="99" width="25" height="12" rx="6" fill="#9B59B6"/>
+  <rect x="101" y="99" width="25" height="12" rx="6" fill="#9B59B6"/>
+  <!-- DOMBRA - Kazakh instrument -->
+  <g transform="translate(100, 85) rotate(35)">
+    <!-- Neck -->
+    <rect x="-3" y="-55" width="6" height="50" rx="3" fill="#8B5E3C"/>
+    <!-- Body of dombra -->
+    <ellipse cx="0" cy="10" rx="14" ry="18" fill="#C8914A" stroke="#8B5E3C" stroke-width="1.5"/>
+    <!-- Sound hole -->
+    <circle cx="0" cy="8" r="5" fill="#8B5E3C"/>
+    <!-- Strings -->
+    <line x1="-2" y1="-55" x2="-2" y2="25" stroke="#DDD" stroke-width="0.8"/>
+    <line x1="2" y1="-55" x2="2" y2="25" stroke="#DDD" stroke-width="0.8"/>
+    <!-- Tuning pegs -->
+    <rect x="-8" y="-55" width="5" height="3" rx="1.5" fill="#8B5E3C"/>
+    <rect x="3" y="-52" width="5" height="3" rx="1.5" fill="#8B5E3C"/>
+  </g>
+  <!-- Musical notes floating -->
+  <text x="15" y="75" font-size="16" fill="#9B59B6" opacity="0.6">♪</text>
+  <text x="130" y="65" font-size="12" fill="#9B59B6" opacity="0.5">♫</text>
+  <text x="25" y="55" font-size="10" fill="#E8B84B" opacity="0.7">♩</text>
+  <!-- Head -->
+  <circle cx="80" cy="75" r="27" fill="#F5C99A"/>
+  <!-- Hair -->
+  <path d="M55,68 Q57,46 80,44 Q103,46 105,68" fill="#3A2A14"/>
+  <!-- Eyes happy -->
+  <path d="M65,73 Q70,68 75,73" stroke="#3A2A14" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M85,73 Q90,68 95,73" stroke="#3A2A14" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Blush -->
+  <circle cx="62" cy="80" r="5" fill="#FFAAA0" opacity="0.5"/>
+  <circle cx="98" cy="80" r="5" fill="#FFAAA0" opacity="0.5"/>
+  <!-- Big smile singing -->
+  <path d="M70,85 Q80,94 90,85" stroke="#D07050" stroke-width="2.5" fill="#FFB8A0" stroke-linecap="round"/>
+  <!-- Age badge -->
+  <rect x="8" y="8" width="44" height="20" rx="10" fill="#9B59B6"/>
+  <text x="30" y="22" text-anchor="middle" font-size="9" fill="white" font-weight="bold" font-family="Nunito">10 лет</text>
+</svg>`,
+
+// 4. MARTIAL ARTS - kazak kures / judo
+martial: `<svg viewBox="0 0 160 185" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="80" cy="100" r="72" fill="#FFF5E8" opacity="0.5"/>
+  <!-- Legs in wide stance -->
+  <rect x="55" y="136" width="15" height="28" rx="7" fill="white" stroke="#DDD" stroke-width="2" transform="rotate(-10, 62, 140)"/>
+  <rect x="88" y="136" width="15" height="28" rx="7" fill="white" stroke="#DDD" stroke-width="2" transform="rotate(10, 95, 140)"/>
+  <!-- Feet -->
+  <ellipse cx="62" cy="166" rx="12" ry="6" fill="#F5C99A" transform="rotate(-8, 62, 166)"/>
+  <ellipse cx="96" cy="166" rx="12" ry="6" fill="#F5C99A" transform="rotate(8, 96, 166)"/>
+  <!-- Judo/Kures GI body -->
+  <path d="M55,93 L55,140 L105,140 L105,93 L88,88 L80,96 L72,88 Z" fill="white" stroke="#DDD" stroke-width="2"/>
+  <!-- GI lapels -->
+  <path d="M72,88 L76,110 L80,96 L84,110 L88,88" fill="#E8B84B" stroke="#C8942B" stroke-width="1"/>
+  <!-- Belt - red (level) -->
+  <rect x="53" y="117" width="54" height="8" rx="4" fill="#E8403A"/>
+  <text x="80" y="124" text-anchor="middle" font-size="5.5" fill="white" font-weight="bold" font-family="Nunito">КАЗАҚ КҮРЕСІ</text>
+  <!-- Arms raised in fighting stance -->
+  <rect x="30" y="86" width="28" height="13" rx="6.5" fill="white" stroke="#DDD" stroke-width="2" transform="rotate(-20, 44, 92)"/>
+  <rect x="102" y="83" width="28" height="13" rx="6.5" fill="white" stroke="#DDD" stroke-width="2" transform="rotate(20, 116, 89)"/>
+  <!-- Fists -->
+  <circle cx="33" cy="84" r="9" fill="#F5C99A"/>
+  <circle cx="127" cy="84" r="9" fill="#F5C99A"/>
+  <!-- Head -->
+  <circle cx="80" cy="68" r="27" fill="#F5C99A"/>
+  <!-- Headband -->
+  <rect x="54" y="56" width="52" height="10" rx="5" fill="#E8403A"/>
+  <text x="80" y="64" text-anchor="middle" font-size="5" fill="white" font-weight="bold">✦ БАТЫР ✦</text>
+  <!-- Hair showing below headband -->
+  <path d="M54,66 Q53,58 57,56" fill="#3A2A14" stroke="none"/>
+  <path d="M106,66 Q107,58 103,56" fill="#3A2A14" stroke="none"/>
+  <!-- Determined eyes -->
+  <ellipse cx="70" cy="69" rx="6" ry="6.5" fill="white"/>
+  <ellipse cx="90" cy="69" rx="6" ry="6.5" fill="white"/>
+  <circle cx="71" cy="70" r="4" fill="#3A2A14"/>
+  <circle cx="91" cy="70" r="4" fill="#3A2A14"/>
+  <circle cx="72" cy="68.5" r="1.5" fill="white"/>
+  <circle cx="92" cy="68.5" r="1.5" fill="white"/>
+  <!-- Fierce brows -->
+  <path d="M64,61 Q70,57 76,61" stroke="#3A2A14" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M84,61 Q90,57 96,61" stroke="#3A2A14" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Determined smile -->
+  <path d="M74,79 Q80,84 86,79" stroke="#D07050" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Age badge -->
+  <rect x="8" y="8" width="44" height="20" rx="10" fill="#E8403A"/>
+  <text x="30" y="22" text-anchor="middle" font-size="9" fill="white" font-weight="bold" font-family="Nunito">13 лет</text>
+</svg>`,
+
+// 5. COLLEGE
+college: `<svg viewBox="0 0 160 185" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="80" cy="100" r="70" fill="#F0F5FF" opacity="0.5"/>
+  <!-- Legs -->
+  <rect x="62" y="135" width="14" height="27" rx="7" fill="#555"/>
+  <rect x="84" y="135" width="14" height="27" rx="7" fill="#555"/>
+  <ellipse cx="69" cy="163" rx="11" ry="6" fill="#3A2A14"/>
+  <ellipse cx="91" cy="163" rx="11" ry="6" fill="#3A2A14"/>
+  <!-- Body - college hoodie -->
+  <rect x="53" y="90" width="54" height="50" rx="15" fill="#3A7BD5"/>
+  <!-- Hoodie pocket -->
+  <rect x="66" y="122" width="28" height="14" rx="7" fill="rgba(0,0,0,0.1)"/>
+  <!-- Arms -->
+  <rect x="32" y="93" width="26" height="13" rx="6.5" fill="#3A7BD5"/>
+  <rect x="102" y="93" width="26" height="13" rx="6.5" fill="#3A7BD5"/>
+  <!-- Laptop bag -->
+  <rect x="98" y="85" width="28" height="22" rx="5" fill="#FFD700" stroke="#E8B84B" stroke-width="2"/>
+  <line x1="112" y1="87" x2="112" y2="105" stroke="#E8B84B" stroke-width="1"/>
+  <circle cx="112" cy="96" r="3" fill="#E8B84B"/>
+  <!-- Head -->
+  <circle cx="80" cy="72" r="27" fill="#F5C99A"/>
+  <!-- Hair slightly longer - teen -->
+  <path d="M54,65 Q55,42 80,40 Q105,42 106,65" fill="#3A2A14"/>
+  <path d="M54,65 Q50,60 52,56 Q55,50 58,58" fill="#3A2A14"/>
+  <!-- Eyes teen smart -->
+  <ellipse cx="70" cy="72" rx="6.5" ry="7" fill="white"/>
+  <ellipse cx="90" cy="72" rx="6.5" ry="7" fill="white"/>
+  <circle cx="71" cy="73" r="4" fill="#3A2A14"/>
+  <circle cx="91" cy="73" r="4" fill="#3A2A14"/>
+  <circle cx="72" cy="71.5" r="1.5" fill="white"/>
+  <circle cx="92" cy="71.5" r="1.5" fill="white"/>
+  <!-- Eyebrows -->
+  <path d="M65,63 Q70,60 75,63" stroke="#3A2A14" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M85,63 Q90,60 95,63" stroke="#3A2A14" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <!-- Blush faint -->
+  <circle cx="62" cy="79" r="4.5" fill="#FFAAA0" opacity="0.4"/>
+  <circle cx="98" cy="79" r="4.5" fill="#FFAAA0" opacity="0.4"/>
+  <!-- Cool smile -->
+  <path d="M73,81 Q80,88 87,81" stroke="#D07050" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Headphones hint -->
+  <path d="M54,68 Q54,50 80,48 Q106,50 106,68" stroke="#3A2A14" stroke-width="3" fill="none"/>
+  <circle cx="54" cy="69" r="5" fill="#2B4C8C"/>
+  <circle cx="106" cy="69" r="5" fill="#2B4C8C"/>
+  <!-- Age badge -->
+  <rect x="8" y="8" width="44" height="20" rx="10" fill="#3A7BD5"/>
+  <text x="30" y="22" text-anchor="middle" font-size="9" fill="white" font-weight="bold" font-family="Nunito">16 лет</text>
+</svg>`,
+
+// 6. UNIVERSITY
+university: `<svg viewBox="0 0 160 185" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="80" cy="100" r="70" fill="#F5F0FF" opacity="0.5"/>
+  <!-- Legs longer - taller now -->
+  <rect x="62" y="136" width="14" height="28" rx="7" fill="#2C2C2C"/>
+  <rect x="84" y="136" width="14" height="28" rx="7" fill="#2C2C2C"/>
+  <ellipse cx="69" cy="165" rx="11" ry="6" fill="#1A1A1A"/>
+  <ellipse cx="91" cy="165" rx="11" ry="6" fill="#1A1A1A"/>
+  <!-- Body - dark blazer -->
+  <rect x="53" y="89" width="54" height="52" rx="14" fill="#1E3A5F"/>
+  <!-- White shirt -->
+  <rect x="70" y="89" width="20" height="20" rx="4" fill="white"/>
+  <!-- Tie blue-gold -->
+  <path d="M77,89 L80,108 L83,89" fill="#E8B84B"/>
+  <!-- Suit lapels -->
+  <path d="M70,89 L58,104 L58,140" stroke="#162D47" stroke-width="3" fill="none"/>
+  <path d="M90,89 L102,104 L102,140" stroke="#162D47" stroke-width="3" fill="none"/>
+  <!-- Arms in blazer -->
+  <rect x="32" y="92" width="25" height="13" rx="6.5" fill="#1E3A5F"/>
+  <rect x="103" y="92" width="25" height="13" rx="6.5" fill="#1E3A5F"/>
+  <!-- White shirt cuffs -->
+  <rect x="32" y="98" width="10" height="7" rx="3.5" fill="white"/>
+  <rect x="118" y="98" width="10" height="7" rx="3.5" fill="white"/>
+  <!-- Folder with papers -->
+  <rect x="99" y="83" width="24" height="28" rx="4" fill="#E8B84B" stroke="#C8942B" stroke-width="1.5"/>
+  <rect x="102" y="86" width="18" height="4" rx="2" fill="white" opacity="0.8"/>
+  <rect x="102" y="93" width="18" height="3" rx="1.5" fill="white" opacity="0.6"/>
+  <rect x="102" y="99" width="12" height="3" rx="1.5" fill="white" opacity="0.4"/>
+  <!-- Head older now -->
+  <circle cx="80" cy="70" r="28" fill="#F0C090"/>
+  <!-- Hair stylish -->
+  <path d="M54,63 Q56,41 80,39 Q104,41 106,63" fill="#2A1A0A"/>
+  <path d="M58,63 Q56,55 54,63" fill="#2A1A0A"/>
+  <!-- Eyes confident -->
+  <ellipse cx="70" cy="70" rx="6.5" ry="7" fill="white"/>
+  <ellipse cx="90" cy="70" rx="6.5" ry="7" fill="white"/>
+  <circle cx="71" cy="71" r="4.5" fill="#2A1A0A"/>
+  <circle cx="91" cy="71" r="4.5" fill="#2A1A0A"/>
+  <circle cx="72.5" cy="69.5" r="1.5" fill="white"/>
+  <circle cx="92.5" cy="69.5" r="1.5" fill="white"/>
+  <!-- Strong brows -->
+  <path d="M64,61 Q70,57 76,60" stroke="#2A1A0A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M84,60 Q90,57 96,61" stroke="#2A1A0A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Confident smile -->
+  <path d="M72,80 Q80,88 88,80" stroke="#B06040" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Small mustache hint -->
+  <path d="M76,76 Q80,78 84,76" stroke="#2A1A0A" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.4"/>
+  <!-- Age badge -->
+  <rect x="8" y="8" width="44" height="20" rx="10" fill="#1E3A5F"/>
+  <text x="30" y="22" text-anchor="middle" font-size="9" fill="white" font-weight="bold" font-family="Nunito">19 лет</text>
+</svg>`,
+
+// 7. AIFC GRADUATE - professional
+aifc: `<svg viewBox="0 0 160 190" xmlns="http://www.w3.org/2000/svg">
+  <!-- Glow behind -->
+  <circle cx="80" cy="100" r="72" fill="#FFF8E0" opacity="0.7"/>
+  <circle cx="80" cy="100" r="60" fill="#FFE680" opacity="0.3"/>
+  <!-- Stars -->
+  <text x="20" y="30" font-size="14" opacity="0.7">⭐</text>
+  <text x="130" y="35" font-size="12" opacity="0.6">✨</text>
+  <text x="15" y="165" font-size="10" opacity="0.5">🌟</text>
+  <text x="135" y="160" font-size="11" opacity="0.6">⭐</text>
+  <!-- Legs professional -->
+  <rect x="62" y="138" width="14" height="28" rx="7" fill="#1C1C2E"/>
+  <rect x="84" y="138" width="14" height="28" rx="7" fill="#1C1C2E"/>
+  <ellipse cx="69" cy="167" rx="12" ry="7" fill="#0D0D1A"/>
+  <ellipse cx="91" cy="167" rx="12" ry="7" fill="#0D0D1A"/>
+  <!-- Body - graduation gown -->
+  <rect x="50" y="87" width="60" height="56" rx="15" fill="#1C1C2E"/>
+  <!-- Gold piping on gown -->
+  <path d="M50,100 L50,140 L60,140 L60,100 Z" fill="#E8B84B" opacity="0.3"/>
+  <path d="M100,100 L100,140 L110,140 L110,100 Z" fill="#E8B84B" opacity="0.3"/>
+  <!-- Gold collar stole -->
+  <path d="M68,87 L72,115 L80,100 L88,115 L92,87" fill="#E8B84B"/>
+  <!-- AIFC badge on chest -->
+  <circle cx="80" cy="118" r="10" fill="#E8B84B" stroke="#C8942B" stroke-width="2"/>
+  <text x="80" y="121" text-anchor="middle" font-size="5.5" fill="#1C1C2E" font-weight="bold">МФЦА</text>
+  <!-- Arms -->
+  <rect x="28" y="91" width="26" height="14" rx="7" fill="#1C1C2E"/>
+  <rect x="106" y="91" width="26" height="14" rx="7" fill="#1C1C2E"/>
+  <!-- Diploma scroll in hand -->
+  <rect x="104" y="80" width="28" height="18" rx="4" fill="#FDEEC8" stroke="#C8942B" stroke-width="2"/>
+  <line x1="118" y1="82" x2="118" y2="96" stroke="#E8B84B" stroke-width="2"/>
+  <rect x="106" y="84" width="10" height="2" rx="1" fill="#C8942B" opacity="0.6"/>
+  <rect x="106" y="88" width="8" height="2" rx="1" fill="#C8942B" opacity="0.4"/>
+  <rect x="106" y="92" width="6" height="2" rx="1" fill="#C8942B" opacity="0.3"/>
+  <!-- Red ribbon on diploma -->
+  <path d="M118,97 Q124,103 118,109 Q112,103 118,97" fill="#E8403A"/>
+  <!-- GRADUATION CAP -->
+  <ellipse cx="80" cy="44" rx="36" ry="8" fill="#1C1C2E"/>
+  <rect x="60" y="36" width="40" height="10" rx="5" fill="#1C1C2E"/>
+  <!-- Tassel -->
+  <line x1="114" y1="44" x2="122" y2="60" stroke="#E8B84B" stroke-width="2.5"/>
+  <circle cx="122" cy="63" r="5" fill="#E8B84B"/>
+  <!-- Head -->
+  <circle cx="80" cy="72" r="27" fill="#F0C090"/>
+  <!-- Eyes wise confident -->
+  <ellipse cx="70" cy="72" rx="6.5" ry="7" fill="white"/>
+  <ellipse cx="90" cy="72" rx="6.5" ry="7" fill="white"/>
+  <circle cx="71" cy="73" r="4.5" fill="#1C1C2E"/>
+  <circle cx="91" cy="73" r="4.5" fill="#1C1C2E"/>
+  <circle cx="72.5" cy="71.5" r="1.5" fill="white"/>
+  <circle cx="92.5" cy="71.5" r="1.5" fill="white"/>
+  <!-- Confident brows -->
+  <path d="M64,62 Q70,58 76,62" stroke="#2A1A0A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M84,62 Q90,58 96,62" stroke="#2A1A0A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Big proud smile -->
+  <path d="M70,82 Q80,92 90,82" stroke="#B06040" stroke-width="2.5" fill="#FFB8A0" stroke-linecap="round"/>
+  <!-- Mustache -->
+  <path d="M74,77 Q80,80 86,77" stroke="#2A1A0A" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.6"/>
+  <!-- Age badge -->
+  <rect x="8" y="8" width="48" height="20" rx="10" fill="#E8B84B"/>
+  <text x="32" y="22" text-anchor="middle" font-size="9" fill="#1C1C2E" font-weight="bold" font-family="Nunito">23 года</text>
+</svg>`
+};
+
+// ============================================================
+//  WAYPOINTS DATA — real Astana locations
+// ============================================================
+const waypoints = [
+    {
+        key: 'kindergarten',
+        age: '4-6 лет',
+        title: '🧸 Детский садик',
+        subtitle: 'Микрорайон Сарыарка, Астана',
+        description: 'Айдос делает первые шаги в большой мир. Новые друзья, игры и казахские сказки перед сном. Мечты ещё такие большие, как весь Казахстан!',
+        emoji: '🧸🎨🌈',
+        skills: [
+            { label: 'Дружба', color: '#FF9F5A', bg: '#FFF0E5' },
+            { label: 'Қазақша', color: '#6DBF67', bg: '#F0FFF0' },
+            { label: 'Творчество', color: '#9B59B6', bg: '#F8F0FF' }
+        ],
+        location: [51.120, 71.403],
+        zoom: 13
+    },
+    {
+        key: 'school',
+        age: '7-11 лет',
+        title: '📚 Начальная школа',
+        subtitle: 'Школа №47, Левобережье',
+        description: 'Первый звонок! Айдос в синей форме с большим портфелем бежит на урок. Математика, русский, казахский — и первые пятёрки в дневнике.',
+        emoji: '✏️📐🔬',
+        skills: [
+            { label: 'Математика', color: '#2B4C8C', bg: '#EEF2FF' },
+            { label: 'Чтение', color: '#E8403A', bg: '#FFF0F0' },
+            { label: 'Спорт', color: '#6DBF67', bg: '#F0FFF0' }
+        ],
+        location: [51.178, 71.449],
+        zoom: 14
+    },
+    {
+        key: 'music',
+        age: '10-14 лет',
+        title: '🎵 Музыкальная школа',
+        subtitle: 'Музыкальная школа им. Курмангазы',
+        description: 'По вечерам Айдос учится играть на домбре. Пальцы болят, но он слышит, как рождается казахская музыка. Кюй Курмангазы эхом разносится по всей Астане.',
+        emoji: '🎵🎸🎼',
+        skills: [
+            { label: 'Домбра', color: '#9B59B6', bg: '#F5F0FF' },
+            { label: 'Нотная грамота', color: '#E8B84B', bg: '#FFF8E5' },
+            { label: 'Дисциплина', color: '#3A7BD5', bg: '#EEF5FF' }
+        ],
+        location: [51.155, 71.465],
+        zoom: 14
+    },
+    {
+        key: 'martial',
+        age: '13-16 лет',
+        title: '🥋 Казақ күресі',
+        subtitle: 'Спортивный комплекс "Казахстан"',
+        description: 'Айдос — Батыр! Три раза в неделю казахская национальная борьба. Тело крепчает, характер закаляется. Первое место на городских соревнованиях!',
+        emoji: '🥋🏆💪',
+        skills: [
+            { label: 'Сила', color: '#E8403A', bg: '#FFF0F0' },
+            { label: 'Стратегия', color: '#2B4C8C', bg: '#EEF2FF' },
+            { label: 'Казақ күресі', color: '#E8B84B', bg: '#FFF8E5' }
+        ],
+        location: [51.130, 71.410],
+        zoom: 13
+    },
+    {
+        key: 'college',
+        age: '16-18 лет',
+        title: '🎒 Колледж',
+        subtitle: 'Назарбаев Интеллектуальная Школа',
+        description: 'Старшая школа — время серьёзных решений. Айдос увлёкся экономикой и финансами. Участвует в олимпиадах, изучает английский и программирование.',
+        emoji: '💡📊🌍',
+        skills: [
+            { label: 'Экономика', color: '#3A7BD5', bg: '#EEF5FF' },
+            { label: 'English', color: '#6DBF67', bg: '#F0FFF0' },
+            { label: 'Лидерство', color: '#E8403A', bg: '#FFF0F0' }
+        ],
+        location: [51.090, 71.468],
+        zoom: 13
+    },
+    {
+        key: 'university',
+        age: '18-22 лет',
+        title: '🏛️ Университет',
+        subtitle: 'Назарбаев Университет, Астана',
+        description: 'Наконец-то! Назарбаев Университет — один из лучших в Центральной Азии. Финансы и банковское дело. Стажировки, конференции, международные программы.',
+        emoji: '🎓📈🤝',
+        skills: [
+            { label: 'Финансы', color: '#1E3A5F', bg: '#EEF5FF' },
+            { label: 'Аналитика', color: '#E8B84B', bg: '#FFF8E5' },
+            { label: 'Networking', color: '#6DBF67', bg: '#F0FFF0' }
+        ],
+        location: [51.089, 71.422],
+        zoom: 14
+    },
+    {
+        key: 'aifc',
+        age: '23+ лет',
+        title: '🏦 МФЦА — Финцентр',
+        subtitle: 'Международный финансовый центр «Астана»',
+        description: 'Айдос достиг своей мечты! МФЦА — финансовый хаб Центральной Азии. Здесь работают лучшие умы со всего мира. Айдос — часть будущего Казахстана. 🇰🇿',
+        emoji: '🏆✨🇰🇿',
+        skills: [
+            { label: 'Инвестиции', color: '#E8B84B', bg: '#FFF8E5' },
+            { label: 'Финтех', color: '#1E3A5F', bg: '#EEF5FF' },
+            { label: 'Казахстан 2050', color: '#E8403A', bg: '#FFF0F0' }
+        ],
+        location: [51.089, 71.415],
+        zoom: 15
+    }
+];
+
+// ============================================================
+//  INIT MAP
+// ============================================================
+const map = L.map('map', {
+    zoomControl: false,
+    dragging: false,
+    scrollWheelZoom: false,
+    attributionControl: false,
+    zoomSnap: 0.1
+});
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    opacity: 0.85
+}).addTo(map);
+
+// Add zoom control top-left
+L.control.zoom({ position: 'topleft' }).addTo(map);
+
+// Attribution tiny
+L.control.attribution({ position: 'bottomleft', prefix: '' })
+    .addAttribution('© OpenStreetMap')
+    .addTo(map);
+
+map.setView(waypoints[0].location, waypoints[0].zoom);
+
+// Draw dotted path
+const pathCoords = waypoints.map(w => w.location);
+const pathLine = L.polyline(pathCoords, {
+    color: '#8B5E3C',
+    weight: 3,
+    opacity: 0.5,
+    dashArray: '8, 6'
+}).addTo(map);
+
+// Custom icon factory
+function makeIcon(emoji, active) {
+    const size = active ? 44 : 32;
+    const bg = active ? '#E8B84B' : '#FDEEC8';
+    const border = active ? '#8B5E3C' : '#C8A070';
+    const shadow = active ? '0 4px 12px rgba(0,0,0,0.3)' : '0 2px 6px rgba(0,0,0,0.15)';
+    return L.divIcon({
+        className: '',
+        html: `<div style="
+            width:${size}px;height:${size}px;
+            background:${bg};
+            border:3px solid ${border};
+            border-radius:50%;
+            display:flex;align-items:center;justify-content:center;
+            font-size:${active ? 20 : 14}px;
+            box-shadow:${shadow};
+            transition:all 0.3s;
+            cursor:pointer;
+        ">${emoji}</div>`,
+        iconSize: [size, size],
+        iconAnchor: [size/2, size/2]
+    });
+}
+
+const EMOJIS = ['🧸','📚','🎵','🥋','🎒','🏛️','🏦'];
+
+const markers = waypoints.map((wp, i) => {
+    const m = L.marker(wp.location, { icon: makeIcon(EMOJIS[i], i === 0) })
+        .addTo(map)
+        .bindTooltip(wp.title, { direction: 'top', className: '' });
+    m.on('click', () => goTo(i));
+    return m;
+});
+
+// ============================================================
+//  BUILD SLIDES
+// ============================================================
+const slidesWrapper = document.getElementById('slides-wrapper');
+
+waypoints.forEach((wp, i) => {
+    const slide = document.createElement('div');
+    slide.className = 'slide' + (i === 0 ? ' active' : '');
+    slide.id = 'slide-' + i;
+
+    const skillsHTML = wp.skills.map(s =>
+        `<span class="skill-tag" style="color:${s.color};background:${s.bg};border-color:${s.color}">${s.label}</span>`
+    ).join('');
+
+    slide.innerHTML = `
+        <div class="char-container bouncing">
+            ${characters[wp.key]}
+            <span class="sparkle">${i === 6 ? '⭐' : '✨'}</span>
+        </div>
+        <div class="slide-age-badge">${wp.age}</div>
+        <h2>${wp.title}</h2>
+        <div class="location-tag">📍 ${wp.subtitle}</div>
+        <p>${wp.description}</p>
+        <div class="emoji-row">${wp.emoji}</div>
+        <div class="skills-row">${skillsHTML}</div>
+    `;
+    slidesWrapper.appendChild(slide);
+});
+
+// ============================================================
+//  STEP INDICATOR
+// ============================================================
+const stepIndicator = document.getElementById('step-indicator');
+waypoints.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'step-dot' + (i === 0 ? ' active' : '');
+    dot.onclick = () => goTo(i);
+    stepIndicator.appendChild(dot);
+});
+
+// ============================================================
+//  NAVIGATION
+// ============================================================
+let current = 0;
+const slides = document.querySelectorAll('.slide');
+const dots = document.querySelectorAll('.step-dot');
+const btnPrev = document.getElementById('btn-prev');
+const btnNext = document.getElementById('btn-next');
+
+function goTo(index) {
+    if (index === current) return;
+    const dir = index > current ? 1 : -1;
+
+    // Exit current
+    slides[current].classList.remove('active');
+    slides[current].classList.add(dir > 0 ? 'exit-left' : '');
+    setTimeout(() => slides[current].classList.remove('exit-left'), 500);
+
+    // Update dots
+    dots[current].classList.remove('active');
+    dots[current].classList.add('done');
+    if (index < current) {
+        // going back - remove done from future ones
+        for (let k = index; k <= current; k++) {
+            dots[k].classList.remove('done', 'active');
+        }
+        dots[index].classList.add('active');
+    } else {
+        dots[index].classList.add('active');
+    }
+
+    // Update markers
+    markers[current].setIcon(makeIcon(EMOJIS[current], false));
+    markers[index].setIcon(makeIcon(EMOJIS[index], true));
+
+    current = index;
+
+    // Show new slide
+    slides[current].classList.add('active');
+
+    // Pan map
+    map.flyTo(waypoints[current].location, waypoints[current].zoom, {
+        duration: 1.2,
+        easeLinearity: 0.5
+    });
+
+    // Update progress
+    document.getElementById('cur').textContent = current + 1;
+    btnPrev.disabled = current === 0;
+    btnNext.disabled = current === waypoints.length - 1;
+}
+
+btnPrev.addEventListener('click', () => { if (current > 0) goTo(current - 1); });
+btnNext.addEventListener('click', () => { if (current < waypoints.length - 1) goTo(current + 1); });
+
+// Keyboard nav
+document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' && current < waypoints.length - 1) goTo(current + 1);
+    if (e.key === 'ArrowLeft' && current > 0) goTo(current - 1);
+});
+
+// Init state
+btnPrev.disabled = true;
+document.getElementById('tot').textContent = waypoints.length;
+
+// Hide key hint after first interaction
+let hintShown = true;
+const keyHint = document.getElementById('key-hint');
+document.addEventListener('click', () => {
+    if (hintShown) { keyHint.style.opacity = '0'; hintShown = false; }
+}, { once: true });
+
+setTimeout(() => { keyHint.style.opacity = '0'; }, 5000);
+</script>
+</body>
+</html>

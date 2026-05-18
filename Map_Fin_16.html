@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Путь Айдоса — Финансовый Центр</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Bangers&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cream: #FFFBF0;
+            --brown: #3A1F00;
+            --gold: #FFD21F;
+            --sky: #5BB8FF;
+            --red: #FF3B3B;
+            --green: #2ECC40;
+            --navy: #1A2E5A;
+            --panel: #FFF8E1;
+            --outline: 3px solid #1A1A1A;
+            --shadow: 4px 4px 0px #1A1A1A;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--cream);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── HEADER ─────────────────────────── */
+        #header {
+            background: var(--navy);
+            border-bottom: 4px solid #1A1A1A;
+            padding: 8px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            z-index: 1000;
+        }
+        #header .sub {
+            color: #aac4ff;
+            font-size: 0.7rem;
+            font-weight: 800;
+            margin-top: -2px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* Step dots */
+        #dots {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+        .dot {
+            width: 12px; height: 12px;
+            border-radius: 50%;
+            border: 3px solid #fff;
+            background: rgba(255,255,255,0.2);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .dot.done { background: rgba(255,210,31,0.5); }
+        .dot.active { background: var(--gold); width: 28px; border-radius: 6px; }
+
+        /* ── LAYOUT ─────────────────────────── */
+        #main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        #map-wrap {
+            flex: 1;
+            position: relative;
+        }
+        #map { width: 100%; height: 100%; }
+
+        /* ── SIDE PANEL ─────────────────────── */
+        #panel {
+            width: 320px;
+            flex-shrink: 0;
+            background: var(--panel);
+            border-left: 4px solid #1A1A1A;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Comic halftone dots bg */
+        #panel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(circle, rgba(0,0,0,0.04) 1px, transparent 1px);
+            background-size: 12px 12px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── SLIDES ─────────────────────────── */
+        #slides-wrap {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            inset: 0;
+            padding: 12px 16px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 8px;
+            opacity: 0;
+            transform: translateX(60px);
+            transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.25,0.8,0.25,1);
+            pointer-events: none;
+            visibility: hidden;
+            z-index: 1;
+        }
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0) !important;
+            pointer-events: auto;
+            visibility: visible;
+            z-index: 2;
+        }
+        .slide.s-exit-fwd {
+            opacity: 0 !important;
+            transform: translateX(-65px) !important;
+            visibility: visible;
+        }
+        .slide.s-exit-bwd {
+            opacity: 0 !important;
+            transform: translateX(65px) !important;
+            visibility: visible;
+        }
+        .slide.s-enter-fwd {
+            opacity: 0;
+            transform: translateX(65px);
+            visibility: visible;
+        }
+        .slide.s-enter-bwd {
+            opacity: 0;
+            transform: translateX(-65px);
+            visibility: visible;
+        }
+
+        /* ── CHARACTER ───────────────────────── */
+        .char-wrap {
+            width: var(--char-size, 155px);
+            height: var(--char-size, 155px);
+            position: relative;
+            flex-shrink: 0;
+            margin-bottom: 2px;
+        }
+        .char-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        @keyframes hop {
+            0%,100% { transform: translateY(0) rotate(0deg); }
+            40% { transform: translateY(-8px) rotate(-2deg); }
+            60% { transform: translateY(-6px) rotate(2deg); }
+        }
+        .char-wrap img { animation: hop 2.2s ease-in-out infinite; }
+
+        /* Comic speech bubble */
+        .bubble {
+            position: absolute;
+            top: -2px;
+            right: -10px;
+            background: white;
+            border: 3px solid #1A1A1A;
+            border-radius: 12px 12px 12px 0;
+            padding: 4px 8px;
+            font-size: 0.62rem;
+            font-weight: 900;
+            color: #1A1A1A;
+            white-space: nowrap;
+            box-shadow: 2px 2px 0 #1A1A1A;
+            z-index: 2;
+        }
+
+        /* Age badge */
+        .age-badge {
+            background: var(--gold);
+            border: 3px solid #1A1A1A;
+            box-shadow: var(--shadow);
+            font-family: 'Bangers', cursive;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            padding: 3px 14px;
+            border-radius: 6px;
+            color: #1A1A1A;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        .slide h2 {
+            font-family: 'Bangers', cursive;
+            font-size: 1.25rem;
+            letter-spacing: 1px;
+            color: var(--navy);
+            text-align: center;
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.15);
+            line-height: 1.15;
+            margin-bottom: 2px;
+        }
+
+        .loc-tag {
+            background: var(--navy);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 3px 10px;
+            border-radius: 4px;
+            border: 2px solid #1A1A1A;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── PER-SLIDE CHAR SIZE ── */
+        #sl_rd  { --char-size: 145px; }
+        #sl_kg  { --char-size: 155px; }
+        #sl_kr1 { --char-size: 145px; }
+        #sl_sc  { --char-size: 150px; }
+        #sl_kr2 { --char-size: 145px; }
+        #sl_co  { --char-size: 150px; }
+        #sl_kr3 { --char-size: 155px; }
+        #sl_ob1 { --char-size: 150px; }
+        #sl_un  { --char-size: 155px; }
+        #sl_ob2 { --char-size: 150px; }
+        #sl_fc  { --char-size: 155px; }
+
+        /* ── MAP CHOICE POPUP ── */
+        #map-popup {
+            position: absolute;
+            z-index: 500;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            pointer-events: none;
+            transform: translate(-50%, calc(-100% - 34px));
+        }
+        #map-popup.visible { display: flex; pointer-events: auto; }
+        #map-popup-inner {
+            position: relative;
+            background: #FFF8E1;
+            border: 3px solid #1A1A1A;
+            border-radius: 12px;
+            box-shadow: 4px 4px 0 #1A1A1A;
+            padding: 8px 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            max-width: 240px;
+        }
+        #map-popup-inner::after {
+            content: '';
+            position: absolute;
+            bottom: -13px;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 7px solid transparent;
+            border-top-color: #1A1A1A;
+        }
+        #map-popup-inner::before {
+            content: '';
+            position: absolute;
+            bottom: -9px;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: #FFF8E1;
+            z-index: 1;
+        }
+        .map-choice-btn {
+            background: var(--gold);
+            border: 2.5px solid #1A1A1A;
+            border-radius: 7px;
+            box-shadow: 2px 2px 0 #1A1A1A;
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.68rem;
+            font-weight: 900;
+            padding: 5px 10px;
+            cursor: pointer;
+            transition: all 0.1s;
+            color: #1A1A1A;
+            white-space: nowrap;
+        }
+        .map-choice-btn:hover {
+            background: #FFE650;
+            transform: translate(-1px,-1px);
+            box-shadow: 4px 4px 0 #1A1A1A;
+        }
+        .map-choice-btn:active {
+            transform: translate(2px,2px);
+            box-shadow: 0px 0px 0 #1A1A1A;
+        }
+        .finish-badge {
+            background: var(--green);
+            color: white;
+            border: 3px solid #1A1A1A;
+            border-radius: 8px;
+            box-shadow: 3px 3px 0 #1A1A1A;
+            font-family: 'Bangers', cursive;
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            padding: 6px 18px;
+        }
+
+        .slide p {
+            font-size: 0.77rem;
+            font-weight: 700;
+            color: #2A1800;
+            line-height: 1.5;
+            text-align: center;
+            max-width: 270px;
+            margin: 2px 0 4px;
+        }
+
+        /* Skill tags */
+        .skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            justify-content: center;
+        }
+        .stag {
+            font-size: 0.6rem;
+            font-weight: 900;
+            padding: 2px 8px;
+            border: 2px solid currentColor;
+            border-radius: 4px;
+            box-shadow: 1px 1px 0 #1A1A1A;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+        }
+
+        /* ── FC FOOTNOTE ── */
+        .fc-strip {
+            width: 100%;
+            border-top: 1.5px dashed #BBC8D8;
+            padding-top: 7px;
+            margin-top: 6px;
+            display: flex;
+            align-items: flex-start;
+            gap: 5px;
+        }
+        .fc-strip-icon {
+            font-size: 0.75rem;
+            flex-shrink: 0;
+            opacity: 0.5;
+            margin-top: 1px;
+        }
+        .fc-strip-text {
+            font-size: 0.74rem;
+            font-weight: 600;
+            font-style: italic;
+            color: #7A90A8;
+            line-height: 1.45;
+            text-align: left;
+        }
+
+        /* ── NAV ─────────────────────────────── */
+        #nav {
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255,255,255,0.6);
+            border-top: 4px solid #1A1A1A;
+            flex-shrink: 0;
+            z-index: 2;
+        }
+        .nav-btn {
+            width: 46px; height: 46px;
+            background: var(--gold);
+            border: 3px solid #1A1A1A;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            font-size: 1.2rem;
+            cursor: pointer;
+            font-weight: 900;
+            font-family: 'Nunito', sans-serif;
+            transition: all 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+        .nav-btn:hover { background: #FFE650; transform: translate(-1px,-1px); box-shadow: 5px 5px 0 #1A1A1A; }
+        .nav-btn:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 #1A1A1A; }
+        .nav-btn:disabled { background: #ccc; opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: var(--shadow); }
+
+        #prog {
+            font-family: 'Bangers', cursive;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            color: var(--navy);
+        }
+        #prog small {
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.65rem;
+            font-weight: 800;
+            display: block;
+            text-align: center;
+            color: #666;
+            letter-spacing: 1px;
+        }
+
+        /* Leaflet popup comic */
+        .leaflet-popup-content-wrapper {
+            background: var(--panel) !important;
+            border: 3px solid #1A1A1A !important;
+            border-radius: 10px !important;
+            box-shadow: 4px 4px 0 #1A1A1A !important;
+        }
+        .leaflet-popup-content {
+            font-family: 'Nunito', sans-serif !important;
+            font-weight: 800 !important;
+            font-size: 0.8rem !important;
+        }
+        .leaflet-popup-tip-container { display: none; }
+
+        /* Hint bar */
+        #hint {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(26,46,90,0.85);
+            color: white;
+            font-size: 0.68rem;
+            font-weight: 800;
+            padding: 5px 14px;
+            border-radius: 20px;
+            z-index: 100;
+            pointer-events: none;
+            transition: opacity 1s;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="header">
+    <div>
+        <div id="h-title" style="font-family:'Bangers',cursive;color:#FFD21F;font-size:1.5rem;letter-spacing:2px;text-shadow:2px 2px 0 #000">
+            🗺️ ПУТЬ АЙДОСА
+        </div>
+        <div class="sub">Астана · Твой путь к Финансовому Центру</div>
+    </div>
+    <div id="dots"></div>
+</div>
+
+<div id="main">
+    <div id="map-wrap">
+        <div id="map"></div>
+        <div id="map-popup"><div id="map-popup-inner"></div></div>
+        <div id="hint">Нажми на активную точку — появится выбор пути!</div>
+    </div>
+    <div id="panel">
+        <div id="slides-wrap"></div>
+        <div id="nav">
+            <button class="nav-btn" id="bp">◀</button>
+            <div id="prog">
+                <span><span id="cn">1</span>/<span id="tn">?</span></span>
+                <small>ШАГ ПУТИ</small>
+            </div>
+            <button class="nav-btn" id="bn">▶</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script>
+// ══════════════════════════════════════════════════
+//  CHARACTER IMAGE FILES — замени пути на свои PNG
+// ══════════════════════════════════════════════════
+const CHAR_IMGS = [
+    'C://Users//User//Downloads//char_1_sads.png',      // 1. Роддом / Детский сад
+    'C://Users//User//Downloads//char_2_schools.png',   // 2. Школа
+    'C://Users//User//Downloads//char_3_musicss.png',   // 3. Кружки
+    'C://Users//User//Downloads//char_4_martials.png',  // 4. Казақ күресі
+    'C://Users//User//Downloads//char_5_colleges.png',  // 5. Колледж
+    'C://Users//User//Downloads//char_6_unis.png',      // 6. Университет
+    'C://Users//User//Downloads//char_7_fcs.png',       // 7. Финансовый центр
+];
+
+// ══════════════════════════════════════════════════
+//  BRANCHING NODE GRAPH
+// ══════════════════════════════════════════════════
+const NODES = {
+  rd: {
+    key:'rd', emoji:'🏥',
+    age:'0 лет', title:'РОДДОМ 🏥',
+    charImg: CHAR_IMGS[0],
+    bubble:'Уа-уа!',
+    loc:'Роддом №1, Астана',
+    desc:'Айдос только появился на свет — крошечный, громкий, весь в будущем! Родители ещё не знают, каким он вырастет. Но уже сейчас можно сделать первый шаг.',
+    fc:'Открыл депозит на новорождённого → государство зачислило стартовые 235 920 ₸.',
+    skills:[{t:'День рождения',c:'#FF3B3B',b:'#FFF0F0'},{t:'Первый вдох',c:'#5BB8FF',b:'#EEF8FF'},{t:'Большие мечты',c:'#6B3FA0',b:'#F5EEFF'}],
+    latlng:[51.1700, 71.4200], zoom:13,
+    next:[{key:'kg', label:'В садик →'}]
+  },
+  kg: {
+    key:'kg', emoji:'🧸',
+    age:'3–6 лет', title:'ДЕТСКИЙ САД 🧸',
+    charImg: CHAR_IMGS[0],
+    bubble:'Привет!',
+    loc:'Мкр. Сарыарка, Астана',
+    desc:'Айдос делает первые шаги! Новые друзья, казахские сказки и первые слова на трёх языках. Мечты такие большие, как весь Казахстан!',
+    fc:'Депозит копится: банк начисляет %, государство добавляет премию 5–7% в год.',
+    skills:[{t:'Дружба',c:'#FF8C42',b:'#FFF3E8'},{t:'Қазақша',c:'#2ECC40',b:'#EDFFF0'},{t:'Творчество',c:'#6B3FA0',b:'#F5EEFF'}],
+    latlng:[51.1620, 71.3780], zoom:14,
+    next:[{key:'kr1', label:'🎨 Доп. кружки'},{key:'sc', label:'📚 В школу'}]
+  },
+  kr1: {
+    key:'kr1', emoji:'🎨',
+    age:'4–6 лет', title:'ДОП. КРУЖКИ (ДОШКОЛ.) 🎨',
+    charImg: CHAR_IMGS[2],
+    bubble:'Творю!',
+    loc:'ДЮЦ «Жас Өркен», Астана',
+    desc:'Рисование, лепка, танцы — Айдос пробует всё! Пальцы в краске, язык высунут от старания. Каждый кружок — это новый мир, открытый настежь.',
+    fc:'Накопления защищены от арестов и списаний — до 10 млн ₸ под госгарантией.',
+    skills:[{t:'Творчество',c:'#6B3FA0',b:'#F5EEFF'},{t:'Усидчивость',c:'#3A7BD5',b:'#EEF5FF'},{t:'Любопытство',c:'#FF8C42',b:'#FFF3E8'}],
+    latlng:[51.1780, 71.3500], zoom:14,
+    next:[{key:'sc', label:'📚 В школу'}]
+  },
+  sc: {
+    key:'sc', emoji:'📚',
+    age:'7–11 лет', title:'НАЧАЛЬНАЯ ШКОЛА 📚',
+    charImg: CHAR_IMGS[1],
+    bubble:'Пятёрка!',
+    loc:'Школа №47, Левобережье',
+    desc:'Первый звонок! Айдос в синей форме с огромным портфелем. Математика, казахский, русский — и первые пятёрки в дневнике. Жизнь становится серьёзнее.',
+    fc:'Госпремия на депозит начисляется каждый год — деньги растут, пока Айдос сидит на уроках.',
+    skills:[{t:'Математика',c:'#1A2E5A',b:'#EEF2FF'},{t:'Чтение',c:'#FF3B3B',b:'#FFF0F0'},{t:'Спорт',c:'#2ECC40',b:'#EDFFF0'}],
+    latlng:[51.1850, 71.4550], zoom:14,
+    next:[{key:'kr2', label:'🎵 Доп. кружки'},{key:'co', label:'🎒 В колледж'}]
+  },
+  kr2: {
+    key:'kr2', emoji:'🎵',
+    age:'10–14 лет', title:'ДОП. КРУЖКИ (ШКОЛА) 🎵',
+    charImg: CHAR_IMGS[2],
+    bubble:'♪ кюй ♪',
+    loc:'Школа им. Курмангазы, Астана',
+    desc:'По вечерам — домбра. Пальцы болят, зато кюй Курмангазы звучит всё лучше. Айдос учится слышать душу казахской музыки — и терпеть, и добиваться.',
+    fc:'% по депозиту капают. Никто не тронет — защита от арестов и третьих лиц.',
+    skills:[{t:'Домбра',c:'#6B3FA0',b:'#F5EEFF'},{t:'Нотная грамота',c:'#FFD21F',b:'#FFFBE8'},{t:'Дисциплина',c:'#3A7BD5',b:'#EEF5FF'}],
+    latlng:[51.1950, 71.4720], zoom:14,
+    next:[{key:'co', label:'🎒 В колледж'}]
+  },
+  co: {
+    key:'co', emoji:'🎒',
+    age:'15–18 лет', title:'КОЛЛЕДЖ 🎒',
+    charImg: CHAR_IMGS[4],
+    bubble:'Профи!',
+    loc:'Колледж «Байтерек», Астана',
+    desc:'Время серьёзных решений. Айдос влюбился в экономику — таблицы, рынки, цифры. Олимпиады, английский, первые стажировки. Всё ради большой мечты.',
+    fc:'Накопленный депозит идёт на оплату колледжа. Не хватает — кредит до 10 лет без залога.',
+    skills:[{t:'Экономика',c:'#3A7BD5',b:'#EEF5FF'},{t:'English',c:'#2ECC40',b:'#EDFFF0'},{t:'Лидерство',c:'#FF3B3B',b:'#FFF0F0'}],
+    latlng:[51.1480, 71.4050], zoom:13,
+    next:[{key:'kr3', label:'🥋 Доп. кружки'},{key:'ob1', label:'🏠 Общежитие'},{key:'un', label:'🏛️ В универ'}]
+  },
+  kr3: {
+    key:'kr3', emoji:'🥋',
+    age:'15–19 лет', title:'КАЗАҚ КҮРЕСІ 🥋',
+    charImg: CHAR_IMGS[3],
+    bubble:'Батыр!',
+    loc:'СК «Казахстан», Астана',
+    desc:'Три раза в неделю — тренировки. Айдос — БАТЫР! Красный пояс, золото на городских соревнованиях. Воля плюс тело плюс характер — это и есть победа.',
+    fc:'Ваучер покрыл колледж. Айдос думает о борьбе, не о деньгах.',
+    skills:[{t:'Казақ Күресі',c:'#FF3B3B',b:'#FFF0F0'},{t:'Стратегия',c:'#1A2E5A',b:'#EEF2FF'},{t:'Характер',c:'#FFD21F',b:'#FFFBE8'}],
+    latlng:[51.1300, 71.3700], zoom:13,
+    next:[{key:'ob1', label:'🏠 Общежитие'},{key:'un', label:'🏛️ В универ'}]
+  },
+  ob1: {
+    key:'ob1', emoji:'🏠',
+    age:'17–22 лет', title:'СТУДЕНЧЕСКОЕ ОБЩЕЖИТИЕ 🏠',
+    charImg: CHAR_IMGS[5],
+    bubble:'Сосед!',
+    loc:'Студенческий корпус, Астана',
+    desc:'Первый раз вдали от дома. Маленькая комната, общая кухня, новые друзья из разных городов Казахстана. Учишься быть взрослым — считать деньги и время.',
+    fc:'Образовательный кредит с отсрочкой: платить начнёшь через 6 месяцев после выпуска.',
+    skills:[{t:'Самостоятельность',c:'#FF8C42',b:'#FFF3E8'},{t:'Тайм-менеджмент',c:'#3A7BD5',b:'#EEF5FF'},{t:'Командность',c:'#2ECC40',b:'#EDFFF0'}],
+    latlng:[51.0980, 71.4480], zoom:14,
+    next:[{key:'un', label:'🏛️ В универ'}]
+  },
+  un: {
+    key:'un', emoji:'🏛️',
+    age:'18–22 лет', title:'НАЗАРБАЕВ УН-Т 🏛️',
+    charImg: CHAR_IMGS[5],
+    bubble:'Диплом!',
+    loc:'Nazarbayev University, Астана',
+    desc:'Назарбаев Университет — лучший в Центральной Азии. Финансы и банковское дело. Стажировки, конференции, международные программы. Айдос растёт быстро.',
+    fc:'Грант — снял депозит с процентами. Не грант — беззалоговый кредит под госгарантию.',
+    skills:[{t:'Финансы',c:'#1A2E5A',b:'#EEF2FF'},{t:'Аналитика',c:'#FFD21F',b:'#FFFBE8'},{t:'Networking',c:'#2ECC40',b:'#EDFFF0'}],
+    latlng:[51.0892, 71.4218], zoom:14,
+    next:[{key:'ob2', label:'🏠 Общежитие'},{key:'fc', label:'🏦 Финансовый центр'}]
+  },
+  ob2: {
+    key:'ob2', emoji:'🏠',
+    age:'18–23 лет', title:'КАМПУС УНИВЕРСИТЕТА 🏠',
+    charImg: CHAR_IMGS[5],
+    bubble:'Учусь!',
+    loc:'Студенческий кампус NU, Астана',
+    desc:'Кампус — это целый город: стартапы, хакатоны, библиотека до полуночи. Айдос не спит, строит модели, спорит с профессорами. Тут куётся будущее.',
+    fc:'Кредит закрывает учёбу. После выпуска — 10 лет на погашение, без штрафов за досрочку.',
+    skills:[{t:'IT & финтех',c:'#2ECC40',b:'#EDFFF0'},{t:'Исследования',c:'#3A7BD5',b:'#EEF5FF'},{t:'Стартап',c:'#FF8C42',b:'#FFF3E8'}],
+    latlng:[51.0820, 71.3850], zoom:14,
+    next:[{key:'fc', label:'🏦 Финансовый центр'}]
+  },
+  fc: {
+    key:'fc', emoji:'🏦',
+    age:'23+ лет', title:'АО «ФИНАНСОВЫЙ ЦЕНТР» 🏦',
+    charImg: CHAR_IMGS[6],
+    bubble:'Мечта!',
+    loc:'ул. Мәңгілік Ел, 18, Астана',
+    desc:'Айдос достиг своей мечты! Работает в организации, которая инвестирует в образование детей Казахстана. Теперь он сам строит это будущее — для следующего Айдоса. 🇰🇿',
+    fc:'С рождения до диплома — депозит, ваучер, кредит. Незаметно. Именно поэтому Айдос здесь.',
+    skills:[{t:'Инвестиции в будущее',c:'#FFD21F',b:'#FFFBE8'},{t:'Казахстан 2050',c:'#FF3B3B',b:'#FFF0F0'}],
+    latlng:[51.1120, 71.4780], zoom:14,
+    next:[]
+  }
+};
+
+// ══════════════════════════════════════════════════
+//  MAP SETUP
+// ══════════════════════════════════════════════════
+const map = L.map('map', {
+    zoomControl: false,
+    dragging: false,
+    scrollWheelZoom: false,
+    attributionControl: false
+});
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { opacity: 1 }).addTo(map);
+L.control.zoom({ position: 'topleft' }).addTo(map);
+map.setView(NODES.rd.latlng, NODES.rd.zoom);
+
+// Draw all connection lines between nodes
+const CONNECTIONS = [
+  ['rd','kg'],['kg','kr1'],['kg','sc'],['kr1','sc'],
+  ['sc','kr2'],['sc','co'],['kr2','co'],
+  ['co','kr3'],['co','ob1'],['co','un'],
+  ['kr3','ob1'],['kr3','un'],
+  ['ob1','un'],
+  ['un','ob2'],['un','fc'],
+  ['ob2','fc']
+];
+const lineObjs = {};
+CONNECTIONS.forEach(([a,b]) => {
+  const line = L.polyline([NODES[a].latlng, NODES[b].latlng], {
+    color: '#aaa', weight: 2, opacity: 0.35, dashArray: '6,5'
+  }).addTo(map);
+  lineObjs[a+'_'+b] = line;
+});
+
+function mkIcon(emoji, active, visited) {
+    const s = active ? 50 : 36;
+    const bg = active ? '#FFD21F' : visited ? '#c8e6c9' : '#FFF8E1';
+    const bdr = active ? '4px solid #1A1A1A' : '3px solid #1A1A1A';
+    const sh = active ? '3px 3px 0 #1A1A1A' : '2px 2px 0 #1A1A1A';
+    return L.divIcon({
+        className: '',
+        html: `<div style="width:${s}px;height:${s}px;background:${bg};border:${bdr};border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:${active?22:15}px;box-shadow:${sh};cursor:pointer;">${emoji}</div>`,
+        iconSize: [s, s],
+        iconAnchor: [s/2, s/2]
+    });
+}
+
+// Create markers for all nodes
+const markers = {};
+Object.values(NODES).forEach(w => {
+  const m = L.marker(w.latlng, { icon: mkIcon(w.emoji, false, false) })
+    .addTo(map)
+    .bindTooltip(w.title, { direction: 'top' });
+  m.on('click', () => {
+    const curNode = NODES[history[history.length-1]];
+    if (curNode.next.some(n => n.key === w.key) || w.key === history[history.length-1]) {
+      goTo(w.key);
+    }
+  });
+  markers[w.key] = m;
+});
+
+// Highlight active path line
+function highlightLine(fromKey, toKey) {
+  const k1 = fromKey+'_'+toKey;
+  const k2 = toKey+'_'+fromKey;
+  const line = lineObjs[k1] || lineObjs[k2];
+  if (line) line.setStyle({ color: '#FFD21F', weight: 4, opacity: 0.9, dashArray: '10,6' });
+}
+
+// ══════════════════════════════════════════════════
+//  BUILD SLIDES
+// ══════════════════════════════════════════════════
+const sw = document.getElementById('slides-wrap');
+Object.values(NODES).forEach((w) => {
+    const d = document.createElement('div');
+    d.className = 'slide' + (w.key==='rd'?' active':'');
+    d.id = 'sl_'+w.key;
+
+    const tags = w.skills ? w.skills.map(s =>
+        `<span class="stag" style="color:${s.c};background:${s.b};border-color:${s.c}">${s.t}</span>`
+    ).join('') : '';
+
+    const locHtml = w.loc ? `<div class="loc-tag">📍 ${w.loc}</div>` : '';
+    const skillsHtml = w.skills ? `<div class="skills">${tags}</div>` : '';
+    d.innerHTML = `
+      <div class="char-wrap">
+        <img src="${w.charImg}" alt="Айдос" style="width:100%;height:100%;object-fit:contain;" onerror="this.style.display='none'">
+        <div class="bubble">${w.bubble}</div>
+      </div>
+      <div class="age-badge">${w.age}</div>
+      <h2>${w.title}</h2>
+      ${locHtml}
+      <p>${w.desc}</p>
+      ${skillsHtml}
+      <div class="fc-strip">
+        <div class="fc-strip-icon">🏦</div>
+        <div class="fc-strip-text">${w.fc}</div>
+      </div>
+      ${w.next.length === 0 ? '<div style="margin-top:6px"><span class="finish-badge">🏆 ФИНИШ!</span></div>' : ''}
+    `;
+    sw.appendChild(d);
+});
+
+// ══════════════════════════════════════════════════
+//  MAP CHOICE POPUP
+// ══════════════════════════════════════════════════
+const mapPopup = document.getElementById('map-popup');
+const mapPopupInner = document.getElementById('map-popup-inner');
+
+function showMapPopup(key) {
+  const node = NODES[key];
+  mapPopupInner.innerHTML = '';
+
+  if (node.next.length === 0) {
+    mapPopup.classList.remove('visible');
+    return;
+  }
+
+  node.next.forEach(nx => {
+    const btn = document.createElement('button');
+    btn.className = 'map-choice-btn';
+    btn.textContent = nx.label;
+    btn.onclick = () => goTo(nx.key);
+    mapPopupInner.appendChild(btn);
+  });
+
+  const pt = map.latLngToContainerPoint(node.latlng);
+  mapPopup.style.left = pt.x + 'px';
+  mapPopup.style.top = pt.y + 'px';
+  mapPopup.classList.add('visible');
+}
+
+function hideMapPopup() {
+  mapPopup.classList.remove('visible');
+}
+
+map.on('move zoom', () => {
+  const curKey = history[history.length - 1];
+  const node = NODES[curKey];
+  if (node.next.length > 0 && mapPopup.classList.contains('visible')) {
+    const pt = map.latLngToContainerPoint(node.latlng);
+    mapPopup.style.left = pt.x + 'px';
+    mapPopup.style.top = pt.y + 'px';
+  }
+});
+
+
+let history = ['rd'];
+const visited = new Set(['rd']);
+
+const bp = document.getElementById('bp');
+const bn = document.getElementById('bn');
+
+function updateDots() {
+  const dotsEl = document.getElementById('dots');
+  dotsEl.innerHTML = '';
+  history.forEach((key, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === history.length-1 ? ' active' : ' done');
+    d.title = NODES[key].title;
+    d.onclick = () => goBackTo(i);
+    dotsEl.appendChild(d);
+  });
+}
+
+function goTo(key) {
+  const prevKey = history[history.length-1];
+  if (key === prevKey) return;
+
+  const prevSlide = document.getElementById('sl_'+prevKey);
+  const nextSlide = document.getElementById('sl_'+key);
+
+  nextSlide.style.transition = 'none';
+  nextSlide.classList.remove('active','s-exit-fwd','s-exit-bwd','s-enter-fwd','s-enter-bwd');
+  nextSlide.classList.add('s-enter-fwd');
+  nextSlide.style.visibility = 'visible';
+  void nextSlide.offsetWidth;
+  prevSlide.classList.remove('active');
+  prevSlide.classList.add('s-exit-fwd');
+  nextSlide.style.transition = '';
+  nextSlide.classList.remove('s-enter-fwd');
+  nextSlide.classList.add('active');
+  setTimeout(() => {
+    prevSlide.classList.remove('s-exit-fwd','s-exit-bwd');
+    prevSlide.style.visibility = '';
+  }, 380);
+
+  markers[prevKey].setIcon(mkIcon(NODES[prevKey].emoji, false, true));
+  markers[key].setIcon(mkIcon(NODES[key].emoji, true, false));
+
+  highlightLine(prevKey, key);
+
+  history.push(key);
+  visited.add(key);
+
+  document.getElementById('cn').textContent = history.length;
+  updateNavBtns();
+  updateDots();
+
+  map.flyTo(NODES[key].latlng, NODES[key].zoom, { duration: 1.2, easeLinearity: 0.4 });
+
+  hideMapPopup();
+  setTimeout(() => showMapPopup(key), 1300);
+}
+
+function goBackTo(idx) {
+  if (idx >= history.length - 1) return;
+  const key = history[idx];
+  const prevKey = history[history.length-1];
+
+  const prevSlide = document.getElementById('sl_'+prevKey);
+  const nextSlide = document.getElementById('sl_'+key);
+
+  nextSlide.style.transition = 'none';
+  nextSlide.classList.remove('active','s-exit-fwd','s-exit-bwd','s-enter-fwd','s-enter-bwd');
+  nextSlide.classList.add('s-enter-bwd');
+  nextSlide.style.visibility = 'visible';
+  void nextSlide.offsetWidth;
+  prevSlide.classList.remove('active');
+  prevSlide.classList.add('s-exit-bwd');
+  nextSlide.style.transition = '';
+  nextSlide.classList.remove('s-enter-bwd');
+  nextSlide.classList.add('active');
+  setTimeout(() => {
+    prevSlide.classList.remove('s-exit-fwd','s-exit-bwd');
+    prevSlide.style.visibility = '';
+  }, 380);
+
+  for (let k = idx+1; k < history.length; k++) {
+    markers[history[k]].setIcon(mkIcon(NODES[history[k]].emoji, false, false));
+    const a = history[k-1], b = history[k];
+    const lk1 = a+'_'+b, lk2 = b+'_'+a;
+    const line = lineObjs[lk1] || lineObjs[lk2];
+    if (line) line.setStyle({ color: '#aaa', weight: 2, opacity: 0.35, dashArray: '6,5' });
+  }
+  markers[key].setIcon(mkIcon(NODES[key].emoji, true, false));
+
+  history = history.slice(0, idx+1);
+  document.getElementById('cn').textContent = history.length;
+  updateNavBtns();
+  updateDots();
+  map.flyTo(NODES[key].latlng, NODES[key].zoom, { duration: 1.2, easeLinearity: 0.4 });
+  hideMapPopup();
+  setTimeout(() => showMapPopup(key), 1300);
+}
+
+bp.addEventListener('click', () => { if (history.length > 1) goBackTo(history.length-2); });
+
+function updateNavBtns() {
+  bp.disabled = history.length <= 1;
+  const curNode = NODES[history[history.length-1]];
+  bn.disabled = curNode.next.length === 0;
+}
+
+bn.addEventListener('click', () => {
+  const curNode = NODES[history[history.length-1]];
+  if (curNode.next.length > 0) goTo(curNode.next[0].key);
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key==='ArrowLeft' && history.length > 1) goBackTo(history.length-2);
+  if (e.key==='ArrowRight') {
+    const curNode = NODES[history[history.length-1]];
+    if (curNode.next.length === 1) goTo(curNode.next[0].key);
+  }
+});
+
+document.getElementById('tn').textContent = '?';
+document.getElementById('cn').textContent = '1';
+bp.disabled = true;
+updateNavBtns();
+
+updateDots();
+markers['rd'].setIcon(mkIcon(NODES['rd'].emoji, true, false));
+setTimeout(() => showMapPopup('rd'), 500);
+
+// Fade hint
+const hint = document.getElementById('hint');
+setTimeout(() => { hint.style.opacity='0'; }, 5000);
+document.addEventListener('click', () => { hint.style.opacity='0'; }, {once:true});
+</script>
+</body>
+</html>
