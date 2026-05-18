@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Путь Айдоса — Финансовый Центр</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
+    <!-- Google Fonts: Roboto and Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800&family=Roboto:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <!-- Google Material Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <style>
+        :root {
+            --md-sys-color-primary: #1A73E8;
+            --md-sys-color-on-primary: #FFFFFF;
+            --md-sys-color-primary-container: #E8F0FE;
+            --md-sys-color-surface: #FFFFFF;
+            --md-sys-color-on-surface: #202124;
+            --md-sys-color-on-surface-variant: #5F6368;
+            --md-sys-color-surface-container: #F8F9FA;
+            --md-sys-color-outline: #DADCE0;
+            --md-sys-color-outline-variant: #E8EAED;
+            
+            /* Material Accents */
+            --md-red: #EA4335;
+            --md-red-container: #FCE8E6;
+            --md-green: #34A853;
+            --md-green-container: #E6F4EA;
+            --md-yellow: #FBBC04;
+            --md-yellow-container: #FEF7E0;
+            --md-purple: #9334E6;
+            --md-purple-container: #F3E8FD;
+            
+            /* Elevations */
+            --md-elevation-1: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+            --md-elevation-2: 0 1px 2px 0 rgba(60,64,67,0.3), 0 2px 6px 2px rgba(60,64,67,0.15);
+            --md-elevation-3: 0 4px 8px 3px rgba(60,64,67,0.15), 0 1px 3px rgba(60,64,67,0.3);
+            
+            /* Easing */
+            --ease-standard: cubic-bezier(0.4, 0.0, 0.2, 1);
+            --ease-emphasized: cubic-bezier(0.2, 0.0, 0, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--md-sys-color-surface-container);
+            color: var(--md-sys-color-on-surface);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── HEADER ─────────────────────────── */
+        #header {
+            background: var(--md-sys-color-surface);
+            border-bottom: 1px solid var(--md-sys-color-outline);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            z-index: 1000;
+            box-shadow: 0 1px 2px 0 rgba(60,64,67,0.1);
+        }
+        
+        .logo-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            font-size: 24px;
+            color: var(--md-sys-color-primary);
+        }
+
+        #header h1 {
+            font-family: 'Inter', sans-serif;
+            color: var(--md-sys-color-on-surface);
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        #header .sub {
+            color: var(--md-sys-color-on-surface-variant);
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        /* Step dots (Google Stepper style) */
+        #dots {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: var(--md-sys-color-outline);
+            cursor: pointer;
+            transition: all 0.3s var(--ease-standard);
+        }
+        .dot.done { 
+            background: var(--md-sys-color-primary); 
+            opacity: 0.5;
+        }
+        .dot.active { 
+            background: var(--md-sys-color-primary); 
+            width: 24px; 
+            border-radius: 5px; 
+        }
+        .dot:hover {
+            transform: scale(1.2);
+        }
+
+        /* ── LAYOUT ─────────────────────────── */
+        #main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #map-wrap {
+            flex: 1;
+            position: relative;
+        }
+        #map { width: 100%; height: 100%; }
+
+        /* ── SIDE PANEL ─────────────────────── */
+        #panel {
+            width: 360px;
+            flex-shrink: 0;
+            background: var(--md-sys-color-surface);
+            border-left: 1px solid var(--md-sys-color-outline);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            box-shadow: -2px 0 12px rgba(0,0,0,0.05);
+            z-index: 10;
+        }
+
+        /* ── SLIDES ─────────────────────────── */
+        #slides-wrap {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            inset: 0;
+            padding: 24px 24px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 16px;
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity 0.3s var(--ease-standard), transform 0.4s var(--ease-emphasized);
+            pointer-events: none;
+            visibility: hidden;
+            z-index: 1;
+            background: var(--md-sys-color-surface);
+            overflow-y: auto;
+        }
+        .slide.active {
+            opacity: 1;
+            transform: translateY(0) !important;
+            pointer-events: auto;
+            visibility: visible;
+            z-index: 2;
+        }
+        .slide.s-exit-fwd {
+            opacity: 0 !important;
+            transform: translateY(-24px) !important;
+            visibility: visible;
+        }
+        .slide.s-exit-bwd {
+            opacity: 0 !important;
+            transform: translateY(24px) !important;
+            visibility: visible;
+        }
+        .slide.s-enter-fwd {
+            opacity: 0;
+            transform: translateY(24px);
+            visibility: visible;
+        }
+        .slide.s-enter-bwd {
+            opacity: 0;
+            transform: translateY(-24px);
+            visibility: visible;
+        }
+
+        /* ── CHARACTER ───────────────────────── */
+        .char-wrap {
+            width: var(--char-size, 160px);
+            height: var(--char-size, 160px);
+            position: relative;
+            flex-shrink: 0;
+            margin-bottom: 8px;
+        }
+        .char-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            /* Smooth float animation instead of jump */
+            animation: float 4s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        /* Google-style speech bubble */
+        .bubble {
+            position: absolute;
+            top: 10px;
+            right: -10px;
+            background: var(--md-sys-color-surface);
+            border: 1px solid var(--md-sys-color-outline-variant);
+            border-radius: 16px 16px 16px 4px;
+            padding: 8px 14px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--md-sys-color-on-surface);
+            white-space: nowrap;
+            box-shadow: var(--md-elevation-1);
+            z-index: 2;
+            animation: fadeInBubble 0.5s 0.3s both var(--ease-standard);
+        }
+        @keyframes fadeInBubble {
+            from { opacity: 0; transform: scale(0.9) translateY(4px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* Age badge */
+        .age-badge {
+            background: var(--md-sys-color-primary-container);
+            color: var(--md-sys-color-primary);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 100px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: -4px;
+        }
+
+        .slide h2 {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            color: var(--md-sys-color-on-surface);
+            text-align: center;
+            line-height: 1.2;
+            margin-bottom: 0;
+        }
+
+        .loc-tag {
+            color: var(--md-sys-color-on-surface-variant);
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* ── PER-SLIDE CHAR SIZE ── */
+        #sl_rd  { --char-size: 150px; }
+        #sl_kg  { --char-size: 160px; }
+        #sl_kr1 { --char-size: 150px; }
+        #sl_sc  { --char-size: 155px; }
+        #sl_kr2 { --char-size: 150px; }
+        #sl_co  { --char-size: 155px; }
+        #sl_kr3 { --char-size: 160px; }
+        #sl_ob1 { --char-size: 155px; }
+        #sl_un  { --char-size: 160px; }
+        #sl_ob2 { --char-size: 155px; }
+        #sl_fc  { --char-size: 160px; }
+
+        /* ── MAP CHOICE POPUP ── */
+        #map-popup {
+            position: absolute;
+            z-index: 500;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            pointer-events: none;
+            transform: translate(-50%, calc(-100% - 32px));
+        }
+        #map-popup.visible { display: flex; pointer-events: auto; }
+        
+        #map-popup-inner {
+            position: relative;
+            background: var(--md-sys-color-surface);
+            border-radius: 12px;
+            box-shadow: var(--md-elevation-3);
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 180px;
+            animation: popUp 0.3s var(--ease-standard);
+            transform-origin: bottom center;
+        }
+        
+        @keyframes popUp {
+            from { opacity: 0; transform: scale(0.9) translateY(8px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        #map-popup-inner::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 8px solid transparent;
+            border-top-color: var(--md-sys-color-surface);
+            filter: drop-shadow(0 4px 3px rgba(60,64,67,0.15));
+        }
+
+        .map-choice-btn {
+            background: var(--md-sys-color-surface);
+            border: 1px solid var(--md-sys-color-outline);
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--md-sys-color-primary);
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .map-choice-btn:hover {
+            background: var(--md-sys-color-primary-container);
+            border-color: var(--md-sys-color-primary);
+        }
+        
+        /* Ripple effect */
+        .map-choice-btn::after {
+            content: "";
+            position: absolute;
+            background: rgba(26,115,232,0.2);
+            display: block;
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            margin-top: -50px;
+            margin-left: -50px;
+            opacity: 0;
+            transition: all 0.5s;
+        }
+        .map-choice-btn:active::after {
+            width: 0;
+            height: 0;
+            opacity: 1;
+            transition: 0s;
+        }
+
+        .finish-badge {
+            background: var(--md-green-container);
+            color: var(--md-green);
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            padding: 10px 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: var(--md-elevation-1);
+        }
+
+        .slide p {
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: var(--md-sys-color-on-surface-variant);
+            line-height: 1.6;
+            text-align: center;
+            margin: 4px 0;
+        }
+
+        /* Skill tags */
+        .skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 4px;
+        }
+        .stag {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* ── FC FOOTNOTE (Material Info Card) ── */
+        .fc-strip {
+            width: 100%;
+            background: var(--md-sys-color-surface-container);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-top: 8px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            border: 1px solid var(--md-sys-color-outline-variant);
+        }
+        .fc-strip-icon {
+            font-size: 1.2rem;
+            color: var(--md-sys-color-primary);
+            flex-shrink: 0;
+        }
+        .fc-strip-text {
+            font-size: 0.8rem;
+            font-weight: 400;
+            color: var(--md-sys-color-on-surface);
+            line-height: 1.5;
+            text-align: left;
+        }
+
+        /* ── NAV ─────────────────────────────── */
+        #nav {
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--md-sys-color-surface);
+            border-top: 1px solid var(--md-sys-color-outline);
+            flex-shrink: 0;
+            z-index: 2;
+        }
+        .nav-btn {
+            width: 48px; height: 48px;
+            background: var(--md-sys-color-surface);
+            border: 1px solid var(--md-sys-color-outline);
+            border-radius: 50%;
+            color: var(--md-sys-color-on-surface);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s var(--ease-standard);
+            user-select: none;
+        }
+        .nav-btn .material-symbols-outlined {
+            font-size: 24px;
+        }
+        .nav-btn:hover:not(:disabled) { 
+            background: var(--md-sys-color-surface-container); 
+            box-shadow: var(--md-elevation-1);
+        }
+        .nav-btn:active:not(:disabled) { 
+            background: var(--md-sys-color-outline-variant); 
+        }
+        .nav-btn:disabled { 
+            opacity: 0.3; 
+            cursor: default; 
+        }
+
+        #prog {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--md-sys-color-on-surface);
+            text-align: center;
+        }
+        #prog small {
+            display: block;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--md-sys-color-on-surface-variant);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        /* Leaflet popup (Material) */
+        .leaflet-popup-content-wrapper {
+            background: var(--md-sys-color-surface) !important;
+            border-radius: 8px !important;
+            box-shadow: var(--md-elevation-2) !important;
+            padding: 4px !important;
+        }
+        .leaflet-popup-content {
+            font-family: 'Roboto', sans-serif !important;
+            font-weight: 500 !important;
+            font-size: 0.85rem !important;
+            color: var(--md-sys-color-on-surface) !important;
+            margin: 8px 12px !important;
+        }
+        .leaflet-popup-tip {
+            background: var(--md-sys-color-surface) !important;
+            box-shadow: var(--md-elevation-2) !important;
+        }
+
+        /* Hint bar */
+        #hint {
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #323232; /* Material Snackbar color */
+            color: #FFFFFF;
+            font-size: 0.85rem;
+            font-weight: 400;
+            padding: 12px 24px;
+            border-radius: 4px;
+            z-index: 100;
+            pointer-events: none;
+            transition: opacity 0.5s var(--ease-standard);
+            box-shadow: var(--md-elevation-2);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Custom Marker Container */
+        .md-marker-wrap {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s var(--ease-standard);
+        }
+        .md-marker-wrap:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+
+<div id="header">
+    <div class="logo-wrap">
+        <span class="material-symbols-outlined logo-icon">explore</span>
+        <div>
+            <h1>Путь Айдоса</h1>
+            <div class="sub">Астана · Твой путь к Финансовому Центру</div>
+        </div>
+    </div>
+    <div id="dots"></div>
+</div>
+
+<div id="main">
+    <div id="map-wrap">
+        <div id="map"></div>
+        <div id="map-popup"><div id="map-popup-inner"></div></div>
+        <div id="hint"><span class="material-symbols-outlined" style="font-size: 18px;">touch_app</span>Нажмите на активную точку на карте, чтобы выбрать путь</div>
+    </div>
+    <div id="panel">
+        <div id="slides-wrap"></div>
+        <div id="nav">
+            <button class="nav-btn" id="bp"><span class="material-symbols-outlined">chevron_left</span></button>
+            <div id="prog">
+                <span><span id="cn">1</span> / <span id="tn">?</span></span>
+                <small>Шаг пути</small>
+            </div>
+            <button class="nav-btn" id="bn"><span class="material-symbols-outlined">chevron_right</span></button>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script>
+// ══════════════════════════════════════════════════
+//  CHARACTER IMAGE FILES
+// ══════════════════════════════════════════════════
+const CHAR_IMGS = [
+    'C://Users//User//Downloads//char_1_sads.png',      // 1. Роддом / Детский сад
+    'C://Users//User//Downloads//char_2_schools.png',   // 2. Школа
+    'C://Users//User//Downloads//char_3_musicss.png',   // 3. Кружки
+    'C://Users//User//Downloads//char_4_martials.png',  // 4. Казақ күресі
+    'C://Users//User//Downloads//char_5_colleges.png',  // 5. Колледж
+    'C://Users//User//Downloads//char_6_unis.png',      // 6. Университет
+    'C://Users//User//Downloads//char_7_fcs.png',       // 7. Финансовый центр
+];
+
+// ══════════════════════════════════════════════════
+//  BRANCHING NODE GRAPH
+// ══════════════════════════════════════════════════
+const NODES = {
+  rd: {
+    key:'rd', emoji:'🏥',
+    age:'0 лет', title:'Роддом',
+    charImg: CHAR_IMGS[0],
+    bubble:'Уа-уа!',
+    loc:'Роддом №1, Астана',
+    desc:'Айдос только появился на свет — крошечный, громкий, весь в будущем! Родители ещё не знают, каким он вырастет. Но уже сейчас можно сделать первый шаг.',
+    fc:'Открыл депозит на новорождённого → государство зачислило стартовые 235 920 ₸.',
+    skills:[{t:'День рождения',c:'#EA4335',b:'#FCE8E6'},{t:'Первый вдох',c:'#1A73E8',b:'#E8F0FE'},{t:'Мечты',c:'#9334E6',b:'#F3E8FD'}],
+    latlng:[51.1700, 71.4200], zoom:13,
+    next:[{key:'kg', label:'В садик'}]
+  },
+  kg: {
+    key:'kg', emoji:'🧸',
+    age:'3–6 лет', title:'Детский сад',
+    charImg: CHAR_IMGS[0],
+    bubble:'Привет!',
+    loc:'Мкр. Сарыарка, Астана',
+    desc:'Айдос делает первые шаги! Новые друзья, казахские сказки и первые слова на трёх языках. Мечты такие большие, как весь Казахстан!',
+    fc:'Депозит копится: банк начисляет %, государство добавляет премию 5–7% в год.',
+    skills:[{t:'Дружба',c:'#FBBC04',b:'#FEF7E0'},{t:'Қазақша',c:'#34A853',b:'#E6F4EA'},{t:'Творчество',c:'#9334E6',b:'#F3E8FD'}],
+    latlng:[51.1620, 71.3780], zoom:14,
+    next:[{key:'kr1', label:'Доп. кружки'},{key:'sc', label:'В школу'}]
+  },
+  kr1: {
+    key:'kr1', emoji:'🎨',
+    age:'4–6 лет', title:'Кружки (Дошкол.)',
+    charImg: CHAR_IMGS[2],
+    bubble:'Творю!',
+    loc:'ДЮЦ «Жас Өркен», Астана',
+    desc:'Рисование, лепка, танцы — Айдос пробует всё! Пальцы в краске, язык высунут от старания. Каждый кружок — это новый мир, открытый настежь.',
+    fc:'Накопления защищены от арестов и списаний — до 10 млн ₸ под госгарантией.',
+    skills:[{t:'Творчество',c:'#9334E6',b:'#F3E8FD'},{t:'Усидчивость',c:'#1A73E8',b:'#E8F0FE'},{t:'Любопытство',c:'#FBBC04',b:'#FEF7E0'}],
+    latlng:[51.1780, 71.3500], zoom:14,
+    next:[{key:'sc', label:'В школу'}]
+  },
+  sc: {
+    key:'sc', emoji:'📚',
+    age:'7–11 лет', title:'Начальная школа',
+    charImg: CHAR_IMGS[1],
+    bubble:'Пятёрка!',
+    loc:'Школа №47, Левобережье',
+    desc:'Первый звонок! Айдос в синей форме с огромным портфелем. Математика, казахский, русский — и первые пятёрки в дневнике. Жизнь становится серьёзнее.',
+    fc:'Госпремия на депозит начисляется каждый год — деньги растут, пока Айдос сидит на уроках.',
+    skills:[{t:'Математика',c:'#1A73E8',b:'#E8F0FE'},{t:'Чтение',c:'#EA4335',b:'#FCE8E6'},{t:'Спорт',c:'#34A853',b:'#E6F4EA'}],
+    latlng:[51.1850, 71.4550], zoom:14,
+    next:[{key:'kr2', label:'Доп. кружки'},{key:'co', label:'В колледж'}]
+  },
+  kr2: {
+    key:'kr2', emoji:'🎵',
+    age:'10–14 лет', title:'Кружки (Школа)',
+    charImg: CHAR_IMGS[2],
+    bubble:'♪ кюй ♪',
+    loc:'Школа им. Курмангазы, Астана',
+    desc:'По вечерам — домбра. Пальцы болят, зато кюй Курмангазы звучит всё лучше. Айдос учится слышать душу казахской музыки — и терпеть, и добиваться.',
+    fc:'% по депозиту капают. Никто не тронет — защита от арестов и третьих лиц.',
+    skills:[{t:'Домбра',c:'#9334E6',b:'#F3E8FD'},{t:'Нотная грамота',c:'#FBBC04',b:'#FEF7E0'},{t:'Дисциплина',c:'#1A73E8',b:'#E8F0FE'}],
+    latlng:[51.1950, 71.4720], zoom:14,
+    next:[{key:'co', label:'В колледж'}]
+  },
+  co: {
+    key:'co', emoji:'🎒',
+    age:'15–18 лет', title:'Колледж',
+    charImg: CHAR_IMGS[4],
+    bubble:'Профи!',
+    loc:'Колледж «Байтерек», Астана',
+    desc:'Время серьёзных решений. Айдос влюбился в экономику — таблицы, рынки, цифры. Олимпиады, английский, первые стажировки. Всё ради большой мечты.',
+    fc:'Накопленный депозит идёт на оплату колледжа. Не хватает — кредит до 10 лет без залога.',
+    skills:[{t:'Экономика',c:'#1A73E8',b:'#E8F0FE'},{t:'English',c:'#34A853',b:'#E6F4EA'},{t:'Лидерство',c:'#EA4335',b:'#FCE8E6'}],
+    latlng:[51.1480, 71.4050], zoom:13,
+    next:[{key:'kr3', label:'Доп. кружки'},{key:'ob1', label:'Общежитие'},{key:'un', label:'В универ'}]
+  },
+  kr3: {
+    key:'kr3', emoji:'🥋',
+    age:'15–19 лет', title:'Казақ Күресі',
+    charImg: CHAR_IMGS[3],
+    bubble:'Батыр!',
+    loc:'СК «Казахстан», Астана',
+    desc:'Три раза в неделю — тренировки. Айдос — БАТЫР! Красный пояс, золото на городских соревнованиях. Воля плюс тело плюс характер — это и есть победа.',
+    fc:'Ваучер покрыл колледж. Айдос думает о борьбе, не о деньгах.',
+    skills:[{t:'Борьба',c:'#EA4335',b:'#FCE8E6'},{t:'Стратегия',c:'#1A73E8',b:'#E8F0FE'},{t:'Характер',c:'#FBBC04',b:'#FEF7E0'}],
+    latlng:[51.1300, 71.3700], zoom:13,
+    next:[{key:'ob1', label:'Общежитие'},{key:'un', label:'В универ'}]
+  },
+  ob1: {
+    key:'ob1', emoji:'🏠',
+    age:'17–22 лет', title:'Общежитие',
+    charImg: CHAR_IMGS[5],
+    bubble:'Сосед!',
+    loc:'Студенческий корпус, Астана',
+    desc:'Первый раз вдали от дома. Маленькая комната, общая кухня, новые друзья из разных городов Казахстана. Учишься быть взрослым — считать деньги и время.',
+    fc:'Образовательный кредит с отсрочкой: платить начнёшь через 6 месяцев после выпуска.',
+    skills:[{t:'Самостоятельность',c:'#FBBC04',b:'#FEF7E0'},{t:'Тайм-менеджмент',c:'#1A73E8',b:'#E8F0FE'},{t:'Команда',c:'#34A853',b:'#E6F4EA'}],
+    latlng:[51.0980, 71.4480], zoom:14,
+    next:[{key:'un', label:'В универ'}]
+  },
+  un: {
+    key:'un', emoji:'🏛️',
+    age:'18–22 лет', title:'Назарбаев Ун-т',
+    charImg: CHAR_IMGS[5],
+    bubble:'Диплом!',
+    loc:'Nazarbayev University, Астана',
+    desc:'Назарбаев Университет — лучший в Центральной Азии. Финансы и банковское дело. Стажировки, конференции, международные программы. Айдос растёт быстро.',
+    fc:'Грант — снял депозит с процентами. Не грант — беззалоговый кредит под госгарантию.',
+    skills:[{t:'Финансы',c:'#1A73E8',b:'#E8F0FE'},{t:'Аналитика',c:'#FBBC04',b:'#FEF7E0'},{t:'Networking',c:'#34A853',b:'#E6F4EA'}],
+    latlng:[51.0892, 71.4218], zoom:14,
+    next:[{key:'ob2', label:'Общежитие'},{key:'fc', label:'В финцентр'}]
+  },
+  ob2: {
+    key:'ob2', emoji:'🏠',
+    age:'18–23 лет', title:'Кампус',
+    charImg: CHAR_IMGS[5],
+    bubble:'Учусь!',
+    loc:'Студенческий кампус NU, Астана',
+    desc:'Кампус — это целый город: стартапы, хакатоны, библиотека до полуночи. Айдос не спит, строит модели, спорит с профессорами. Тут куётся будущее.',
+    fc:'Кредит закрывает учёбу. После выпуска — 10 лет на погашение, без штрафов за досрочку.',
+    skills:[{t:'IT & финтех',c:'#34A853',b:'#E6F4EA'},{t:'Исследования',c:'#1A73E8',b:'#E8F0FE'},{t:'Стартап',c:'#FBBC04',b:'#FEF7E0'}],
+    latlng:[51.0820, 71.3850], zoom:14,
+    next:[{key:'fc', label:'В финцентр'}]
+  },
+  fc: {
+    key:'fc', emoji:'🏦',
+    age:'23+ лет', title:'АО «Финцентр»',
+    charImg: CHAR_IMGS[6],
+    bubble:'Мечта!',
+    loc:'ул. Мәңгілік Ел, 18, Астана',
+    desc:'Айдос достиг своей мечты! Работает в организации, которая инвестирует в образование детей Казахстана. Теперь он сам строит это будущее — для следующего Айдоса. 🇰🇿',
+    fc:'С рождения до диплома — депозит, ваучер, кредит. Незаметно. Именно поэтому Айдос здесь.',
+    skills:[{t:'Инвестиции',c:'#FBBC04',b:'#FEF7E0'},{t:'Казахстан 2050',c:'#EA4335',b:'#FCE8E6'}],
+    latlng:[51.1120, 71.4780], zoom:14,
+    next:[]
+  }
+};
+
+// ══════════════════════════════════════════════════
+//  MAP SETUP
+// ══════════════════════════════════════════════════
+const map = L.map('map', {
+    zoomControl: false,
+    dragging: false,
+    scrollWheelZoom: false,
+    attributionControl: false
+});
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { opacity: 1 }).addTo(map);
+L.control.zoom({ position: 'topleft' }).addTo(map);
+map.setView(NODES.rd.latlng, NODES.rd.zoom);
+
+// Draw all connection lines between nodes
+const CONNECTIONS = [
+  ['rd','kg'],['kg','kr1'],['kg','sc'],['kr1','sc'],
+  ['sc','kr2'],['sc','co'],['kr2','co'],
+  ['co','kr3'],['co','ob1'],['co','un'],
+  ['kr3','ob1'],['kr3','un'],
+  ['ob1','un'],
+  ['un','ob2'],['un','fc'],
+  ['ob2','fc']
+];
+const lineObjs = {};
+CONNECTIONS.forEach(([a,b]) => {
+  const line = L.polyline([NODES[a].latlng, NODES[b].latlng], {
+    color: '#DADCE0', weight: 3, opacity: 0.8, dashArray: '6,6'
+  }).addTo(map);
+  lineObjs[a+'_'+b] = line;
+});
+
+function mkIcon(emoji, active, visited) {
+    const s = active ? 48 : 36;
+    const bg = active ? '#1A73E8' : visited ? '#E8F0FE' : '#FFFFFF';
+    const bdr = active ? 'none' : '1px solid #DADCE0';
+    const sh = active ? '0 4px 8px 3px rgba(26,115,232,.3)' : '0 1px 2px 0 rgba(60,64,67,.3)';
+    return L.divIcon({
+        className: '',
+        html: `<div class="md-marker-wrap" style="background:${bg};border:${bdr};box-shadow:${sh};font-size:${active?24:18}px;">${emoji}</div>`,
+        iconSize: [s, s],
+        iconAnchor: [s/2, s/2]
+    });
+}
+
+// Create markers for all nodes
+const markers = {};
+Object.values(NODES).forEach(w => {
+  const m = L.marker(w.latlng, { icon: mkIcon(w.emoji, false, false) })
+    .addTo(map)
+    .bindTooltip(w.title, { direction: 'top' });
+  m.on('click', () => {
+    const curNode = NODES[history[history.length-1]];
+    if (curNode.next.some(n => n.key === w.key) || w.key === history[history.length-1]) {
+      goTo(w.key);
+    }
+  });
+  markers[w.key] = m;
+});
+
+// Highlight active path line
+function highlightLine(fromKey, toKey) {
+  const k1 = fromKey+'_'+toKey;
+  const k2 = toKey+'_'+fromKey;
+  const line = lineObjs[k1] || lineObjs[k2];
+  if (line) line.setStyle({ color: '#1A73E8', weight: 4, opacity: 1, dashArray: 'none' });
+}
+
+// ══════════════════════════════════════════════════
+//  BUILD SLIDES
+// ══════════════════════════════════════════════════
+const sw = document.getElementById('slides-wrap');
+Object.values(NODES).forEach((w) => {
+    const d = document.createElement('div');
+    d.className = 'slide' + (w.key==='rd'?' active':'');
+    d.id = 'sl_'+w.key;
+
+    const tags = w.skills ? w.skills.map(s =>
+        `<span class="stag" style="color:${s.c};background:${s.b};"><span class="material-symbols-outlined" style="font-size:14px;">check_circle</span>${s.t}</span>`
+    ).join('') : '';
+
+    const locHtml = w.loc ? `<div class="loc-tag"><span class="material-symbols-outlined" style="font-size:16px;">location_on</span>${w.loc}</div>` : '';
+    const skillsHtml = w.skills ? `<div class="skills">${tags}</div>` : '';
+    d.innerHTML = `
+      <div class="char-wrap">
+        <img src="${w.charImg}" alt="Айдос" onerror="this.style.display='none'">
+        <div class="bubble">${w.bubble}</div>
+      </div>
+      <div class="age-badge">${w.age}</div>
+      <h2>${w.title}</h2>
+      ${locHtml}
+      <p>${w.desc}</p>
+      ${skillsHtml}
+      <div class="fc-strip">
+        <span class="material-symbols-outlined fc-strip-icon">account_balance</span>
+        <div class="fc-strip-text">${w.fc}</div>
+      </div>
+      ${w.next.length === 0 ? '<div style="margin-top:12px"><span class="finish-badge"><span class="material-symbols-outlined">emoji_events</span> Финиш!</span></div>' : ''}
+    `;
+    sw.appendChild(d);
+});
+
+// ══════════════════════════════════════════════════
+//  MAP CHOICE POPUP
+// ══════════════════════════════════════════════════
+const mapPopup = document.getElementById('map-popup');
+const mapPopupInner = document.getElementById('map-popup-inner');
+
+function showMapPopup(key) {
+  const node = NODES[key];
+  mapPopupInner.innerHTML = '';
+
+  if (node.next.length === 0) {
+    mapPopup.classList.remove('visible');
+    return;
+  }
+
+  node.next.forEach(nx => {
+    const btn = document.createElement('button');
+    btn.className = 'map-choice-btn';
+    btn.innerHTML = `<span>${nx.label}</span><span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>`;
+    btn.onclick = () => goTo(nx.key);
+    mapPopupInner.appendChild(btn);
+  });
+
+  const pt = map.latLngToContainerPoint(node.latlng);
+  mapPopup.style.left = pt.x + 'px';
+  mapPopup.style.top = pt.y + 'px';
+  mapPopup.classList.add('visible');
+}
+
+function hideMapPopup() {
+  mapPopup.classList.remove('visible');
+}
+
+map.on('move zoom', () => {
+  const curKey = history[history.length - 1];
+  const node = NODES[curKey];
+  if (node.next.length > 0 && mapPopup.classList.contains('visible')) {
+    const pt = map.latLngToContainerPoint(node.latlng);
+    mapPopup.style.left = pt.x + 'px';
+    mapPopup.style.top = pt.y + 'px';
+  }
+});
+
+
+let history = ['rd'];
+const visited = new Set(['rd']);
+
+const bp = document.getElementById('bp');
+const bn = document.getElementById('bn');
+
+function updateDots() {
+  const dotsEl = document.getElementById('dots');
+  dotsEl.innerHTML = '';
+  history.forEach((key, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === history.length-1 ? ' active' : ' done');
+    d.title = NODES[key].title;
+    d.onclick = () => goBackTo(i);
+    dotsEl.appendChild(d);
+  });
+}
+
+function goTo(key) {
+  const prevKey = history[history.length-1];
+  if (key === prevKey) return;
+
+  const prevSlide = document.getElementById('sl_'+prevKey);
+  const nextSlide = document.getElementById('sl_'+key);
+
+  nextSlide.style.transition = 'none';
+  nextSlide.classList.remove('active','s-exit-fwd','s-exit-bwd','s-enter-fwd','s-enter-bwd');
+  nextSlide.classList.add('s-enter-fwd');
+  nextSlide.style.visibility = 'visible';
+  void nextSlide.offsetWidth;
+  prevSlide.classList.remove('active');
+  prevSlide.classList.add('s-exit-fwd');
+  nextSlide.style.transition = '';
+  nextSlide.classList.remove('s-enter-fwd');
+  nextSlide.classList.add('active');
+  setTimeout(() => {
+    prevSlide.classList.remove('s-exit-fwd','s-exit-bwd');
+    prevSlide.style.visibility = '';
+  }, 400);
+
+  markers[prevKey].setIcon(mkIcon(NODES[prevKey].emoji, false, true));
+  markers[key].setIcon(mkIcon(NODES[key].emoji, true, false));
+
+  highlightLine(prevKey, key);
+
+  history.push(key);
+  visited.add(key);
+
+  document.getElementById('cn').textContent = history.length;
+  updateNavBtns();
+  updateDots();
+
+  map.flyTo(NODES[key].latlng, NODES[key].zoom, { duration: 1.2, easeLinearity: 0.4 });
+
+  hideMapPopup();
+  setTimeout(() => showMapPopup(key), 1300);
+}
+
+function goBackTo(idx) {
+  if (idx >= history.length - 1) return;
+  const key = history[idx];
+  const prevKey = history[history.length-1];
+
+  const prevSlide = document.getElementById('sl_'+prevKey);
+  const nextSlide = document.getElementById('sl_'+key);
+
+  nextSlide.style.transition = 'none';
+  nextSlide.classList.remove('active','s-exit-fwd','s-exit-bwd','s-enter-fwd','s-enter-bwd');
+  nextSlide.classList.add('s-enter-bwd');
+  nextSlide.style.visibility = 'visible';
+  void nextSlide.offsetWidth;
+  prevSlide.classList.remove('active');
+  prevSlide.classList.add('s-exit-bwd');
+  nextSlide.style.transition = '';
+  nextSlide.classList.remove('s-enter-bwd');
+  nextSlide.classList.add('active');
+  setTimeout(() => {
+    prevSlide.classList.remove('s-exit-fwd','s-exit-bwd');
+    prevSlide.style.visibility = '';
+  }, 400);
+
+  for (let k = idx+1; k < history.length; k++) {
+    markers[history[k]].setIcon(mkIcon(NODES[history[k]].emoji, false, false));
+    const a = history[k-1], b = history[k];
+    const lk1 = a+'_'+b, lk2 = b+'_'+a;
+    const line = lineObjs[lk1] || lineObjs[lk2];
+    if (line) line.setStyle({ color: '#DADCE0', weight: 3, opacity: 0.8, dashArray: '6,6' });
+  }
+  markers[key].setIcon(mkIcon(NODES[key].emoji, true, false));
+
+  history = history.slice(0, idx+1);
+  document.getElementById('cn').textContent = history.length;
+  updateNavBtns();
+  updateDots();
+  map.flyTo(NODES[key].latlng, NODES[key].zoom, { duration: 1.2, easeLinearity: 0.4 });
+  hideMapPopup();
+  setTimeout(() => showMapPopup(key), 1300);
+}
+
+bp.addEventListener('click', () => { if (history.length > 1) goBackTo(history.length-2); });
+
+function updateNavBtns() {
+  bp.disabled = history.length <= 1;
+  const curNode = NODES[history[history.length-1]];
+  bn.disabled = curNode.next.length === 0;
+}
+
+bn.addEventListener('click', () => {
+  const curNode = NODES[history[history.length-1]];
+  if (curNode.next.length > 0) goTo(curNode.next[0].key);
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key==='ArrowLeft' && history.length > 1) goBackTo(history.length-2);
+  if (e.key==='ArrowRight') {
+    const curNode = NODES[history[history.length-1]];
+    if (curNode.next.length === 1) goTo(curNode.next[0].key);
+  }
+});
+
+document.getElementById('tn').textContent = '?';
+document.getElementById('cn').textContent = '1';
+bp.disabled = true;
+updateNavBtns();
+
+updateDots();
+markers['rd'].setIcon(mkIcon(NODES['rd'].emoji, true, false));
+setTimeout(() => showMapPopup('rd'), 500);
+
+// Fade hint
+const hint = document.getElementById('hint');
+setTimeout(() => { hint.style.opacity='0'; }, 5000);
+document.addEventListener('click', () => { hint.style.opacity='0'; }, {once:true});
+</script>
+</body>
+</html>
