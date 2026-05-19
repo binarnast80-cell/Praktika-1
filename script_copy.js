@@ -1,15 +1,15 @@
 
 // ══════════════════════════════════════════════════
-//  CHARACTER IMAGE FILES — относительные пути
+//  CHARACTER IMAGE FILES — замени пути на свои PNG
 // ══════════════════════════════════════════════════
 const CHAR_IMGS = [
-    './images/char_1_sads.png',      // 1. Роддом / Детский сад
-    './images/char_2_schools.png',   // 2. Школа
-    './images/char_3_musicss.png',   // 3. Кружки
-    './images/char_4_martials.png',  // 4. Казақ күресі
-    './images/char_5_colleges.png',  // 5. Колледж
-    './images/char_6_unis.png',      // 6. Университет
-    './images/char_7_fcs.png',       // 7. Финансовый центр
+    'C://Users//User//Downloads//char_1_sads.png',      // 1. Роддом / Детский сад
+    'C://Users//User//Downloads//char_2_schools.png',   // 2. Школа
+    'C://Users//User//Downloads//char_3_musicss.png',   // 3. Кружки
+    'C://Users//User//Downloads//char_4_martials.png',  // 4. Казақ күресі
+    'C://Users//User//Downloads//char_5_colleges.png',  // 5. Колледж
+    'C://Users//User//Downloads//char_6_unis.png',      // 6. Университет
+    'C://Users//User//Downloads//char_7_fcs.png',       // 7. Финансовый центр
 ];
 
 // ══════════════════════════════════════════════════
@@ -21,11 +21,11 @@ const NODES = {
     age:'0 лет', title:'РОДДОМ 🏥',
     charImg: CHAR_IMGS[0],
     bubble:'Уа-уа!',
-    loc:'Перинатальный центр, пр. Тәуелсіздік, 3',
+    loc:'Роддом №1, Астана',
     desc:'Айдос только появился на свет — крошечный, громкий, весь в будущем! Родители ещё не знают, каким он вырастет. Но уже сейчас можно сделать первый шаг.',
     fc:'Открыл депозит на новорождённого → государство зачислило стартовые 235 920 ₸.',
-    skills:[{t:'День рождения',c:'#c45c5c',b:'#fceaea'},{t:'Первый вдох',c:'#2db8a4',b:'#e6f7f4'},{t:'Большие мечты',c:'#6b5b95',b:'#f0ecf8'}],
-    latlng:[51.1478, 71.4622], zoom:14,
+    skills:[{t:'День рождения',c:'#FF3B3B',b:'#FFF0F0'},{t:'Первый вдох',c:'#5BB8FF',b:'#EEF8FF'},{t:'Большие мечты',c:'#6B3FA0',b:'#F5EEFF'}],
+    latlng:[51.1700, 71.4200], zoom:13,
     next:[{key:'kg', label:'В садик →'}]
   },
   kg: {
@@ -33,11 +33,11 @@ const NODES = {
     age:'3–6 лет', title:'ДЕТСКИЙ САД 🧸',
     charImg: CHAR_IMGS[0],
     bubble:'Привет!',
-    loc:'мкр. Сарыарка, ул. Сейфуллина, Астана',
+    loc:'Мкр. Сарыарка, Астана',
     desc:'Айдос делает первые шаги! Новые друзья, казахские сказки и первые слова на трёх языках. Мечты такие большие, как весь Казахстан!',
     fc:'Депозит копится: банк начисляет %, государство добавляет премию 5–7% в год.',
-    skills:[{t:'Дружба',c:'#d97b3a',b:'#fef3e8'},{t:'Қазақша',c:'#3a9e6a',b:'#e8f6ee'},{t:'Творчество',c:'#6b5b95',b:'#f0ecf8'}],
-    latlng:[51.1580, 71.4665], zoom:14,
+    skills:[{t:'Дружба',c:'#FF8C42',b:'#FFF3E8'},{t:'Қазақша',c:'#2ECC40',b:'#EDFFF0'},{t:'Творчество',c:'#6B3FA0',b:'#F5EEFF'}],
+    latlng:[51.1620, 71.3780], zoom:14,
     next:[{key:'kr1', label:'🎨 Доп. кружки'},{key:'sc', label:'📚 В школу'}]
   },
   kr1: {
@@ -45,11 +45,11 @@ const NODES = {
     age:'4–6 лет', title:'ДОП. КРУЖКИ (ДОШКОЛ.) 🎨',
     charImg: CHAR_IMGS[2],
     bubble:'Творю!',
-    loc:'Дворец школьников им. Аль-Фараби, пр. Б. Момышұлы, 5',
+    loc:'ДЮЦ «Жас Өркен», Астана',
     desc:'Рисование, лепка, танцы — Айдос пробует всё! Пальцы в краске, язык высунут от старания. Каждый кружок — это новый мир, открытый настежь.',
     fc:'Накопления защищены от арестов и списаний — до 10 млн ₸ под госгарантией.',
-    skills:[{t:'Творчество',c:'#6b5b95',b:'#f0ecf8'},{t:'Усидчивость',c:'#2a7a8c',b:'#e6f4f8'},{t:'Любопытство',c:'#d97b3a',b:'#fef3e8'}],
-    latlng:[51.1358, 71.4652], zoom:14,
+    skills:[{t:'Творчество',c:'#6B3FA0',b:'#F5EEFF'},{t:'Усидчивость',c:'#3A7BD5',b:'#EEF5FF'},{t:'Любопытство',c:'#FF8C42',b:'#FFF3E8'}],
+    latlng:[51.1780, 71.3500], zoom:14,
     next:[{key:'sc', label:'📚 В школу'}]
   },
   sc: {
@@ -57,11 +57,11 @@ const NODES = {
     age:'7–11 лет', title:'НАЧАЛЬНАЯ ШКОЛА 📚',
     charImg: CHAR_IMGS[1],
     bubble:'Пятёрка!',
-    loc:'Школа-гимназия №47, ул. Сейфуллина, 21',
+    loc:'Школа №47, Левобережье',
     desc:'Первый звонок! Айдос в синей форме с огромным портфелем. Математика, казахский, русский — и первые пятёрки в дневнике. Жизнь становится серьёзнее.',
     fc:'Госпремия на депозит начисляется каждый год — деньги растут, пока Айдос сидит на уроках.',
-    skills:[{t:'Математика',c:'#0f2844',b:'#e6f1f8'},{t:'Чтение',c:'#c45c5c',b:'#fceaea'},{t:'Спорт',c:'#3a9e6a',b:'#e8f6ee'}],
-    latlng:[51.1637, 71.4697], zoom:15,
+    skills:[{t:'Математика',c:'#1A2E5A',b:'#EEF2FF'},{t:'Чтение',c:'#FF3B3B',b:'#FFF0F0'},{t:'Спорт',c:'#2ECC40',b:'#EDFFF0'}],
+    latlng:[51.1850, 71.4550], zoom:14,
     next:[{key:'kr2', label:'🎵 Доп. кружки'},{key:'co', label:'🎒 В колледж'}]
   },
   kr2: {
@@ -69,11 +69,11 @@ const NODES = {
     age:'10–14 лет', title:'ДОП. КРУЖКИ (ШКОЛА) 🎵',
     charImg: CHAR_IMGS[2],
     bubble:'♪ кюй ♪',
-    loc:'Qurmangazy Music Academy, пр. Қабанбай батыр, 56Б',
+    loc:'Школа им. Курмангазы, Астана',
     desc:'По вечерам — домбра. Пальцы болят, зато кюй Курмангазы звучит всё лучше. Айдос учится слышать душу казахской музыки — и терпеть, и добиваться.',
     fc:'% по депозиту капают. Никто не тронет — защита от арестов и третьих лиц.',
-    skills:[{t:'Домбра',c:'#6b5b95',b:'#f0ecf8'},{t:'Нотная грамота',c:'#c9a03a',b:'#fdf6e3'},{t:'Дисциплина',c:'#2a7a8c',b:'#e6f4f8'}],
-    latlng:[51.1018, 71.4085], zoom:15,
+    skills:[{t:'Домбра',c:'#6B3FA0',b:'#F5EEFF'},{t:'Нотная грамота',c:'#FFD21F',b:'#FFFBE8'},{t:'Дисциплина',c:'#3A7BD5',b:'#EEF5FF'}],
+    latlng:[51.1950, 71.4720], zoom:14,
     next:[{key:'co', label:'🎒 В колледж'}]
   },
   co: {
@@ -81,11 +81,11 @@ const NODES = {
     age:'15–18 лет', title:'КОЛЛЕДЖ 🎒',
     charImg: CHAR_IMGS[4],
     bubble:'Профи!',
-    loc:'Колледж «Тұран», ул. Бараева, 9/2',
+    loc:'Колледж «Байтерек», Астана',
     desc:'Время серьёзных решений. Айдос влюбился в экономику — таблицы, рынки, цифры. Олимпиады, английский, первые стажировки. Всё ради большой мечты.',
     fc:'Накопленный депозит идёт на оплату колледжа. Не хватает — кредит до 10 лет без залога.',
-    skills:[{t:'Экономика',c:'#2a7a8c',b:'#e6f4f8'},{t:'English',c:'#3a9e6a',b:'#e8f6ee'},{t:'Лидерство',c:'#c45c5c',b:'#fceaea'}],
-    latlng:[51.1572, 71.4349], zoom:15,
+    skills:[{t:'Экономика',c:'#3A7BD5',b:'#EEF5FF'},{t:'English',c:'#2ECC40',b:'#EDFFF0'},{t:'Лидерство',c:'#FF3B3B',b:'#FFF0F0'}],
+    latlng:[51.1480, 71.4050], zoom:13,
     next:[{key:'kr3', label:'🥋 Доп. кружки'},{key:'ob1', label:'🏠 Общежитие'},{key:'un', label:'🏛️ В универ'}]
   },
   kr3: {
@@ -93,11 +93,11 @@ const NODES = {
     age:'15–19 лет', title:'КАЗАҚ КҮРЕСІ 🥋',
     charImg: CHAR_IMGS[3],
     bubble:'Батыр!',
-    loc:'ЛСК «Qazaqstan», пр. Туран, 59',
+    loc:'СК «Казахстан», Астана',
     desc:'Три раза в неделю — тренировки. Айдос — БАТЫР! Красный пояс, золото на городских соревнованиях. Воля плюс тело плюс характер — это и есть победа.',
     fc:'Ваучер покрыл колледж. Айдос думает о борьбе, не о деньгах.',
-    skills:[{t:'Казақ Күресі',c:'#c45c5c',b:'#fceaea'},{t:'Стратегия',c:'#0f2844',b:'#e6f1f8'},{t:'Характер',c:'#c9a03a',b:'#fdf6e3'}],
-    latlng:[51.1033, 71.3940], zoom:15,
+    skills:[{t:'Казақ Күресі',c:'#FF3B3B',b:'#FFF0F0'},{t:'Стратегия',c:'#1A2E5A',b:'#EEF2FF'},{t:'Характер',c:'#FFD21F',b:'#FFFBE8'}],
+    latlng:[51.1300, 71.3700], zoom:13,
     next:[{key:'ob1', label:'🏠 Общежитие'},{key:'un', label:'🏛️ В универ'}]
   },
   ob1: {
@@ -105,11 +105,11 @@ const NODES = {
     age:'17–22 лет', title:'СТУДЕНЧЕСКОЕ ОБЩЕЖИТИЕ 🏠',
     charImg: CHAR_IMGS[5],
     bubble:'Сосед!',
-    loc:'Общежитие NU, пр. Қабанбай батыр, 29',
+    loc:'Студенческий корпус, Астана',
     desc:'Первый раз вдали от дома. Маленькая комната, общая кухня, новые друзья из разных городов Казахстана. Учишься быть взрослым — считать деньги и время.',
     fc:'Образовательный кредит с отсрочкой: платить начнёшь через 6 месяцев после выпуска.',
-    skills:[{t:'Самостоятельность',c:'#d97b3a',b:'#fef3e8'},{t:'Тайм-менеджмент',c:'#2a7a8c',b:'#e6f4f8'},{t:'Командность',c:'#3a9e6a',b:'#e8f6ee'}],
-    latlng:[51.0888, 71.3995], zoom:15,
+    skills:[{t:'Самостоятельность',c:'#FF8C42',b:'#FFF3E8'},{t:'Тайм-менеджмент',c:'#3A7BD5',b:'#EEF5FF'},{t:'Командность',c:'#2ECC40',b:'#EDFFF0'}],
+    latlng:[51.0980, 71.4480], zoom:14,
     next:[{key:'un', label:'🏛️ В универ'}]
   },
   un: {
@@ -117,11 +117,11 @@ const NODES = {
     age:'18–22 лет', title:'НАЗАРБАЕВ УН-Т 🏛️',
     charImg: CHAR_IMGS[5],
     bubble:'Диплом!',
-    loc:'Nazarbayev University, пр. Қабанбай батыр, 53',
+    loc:'Nazarbayev University, Астана',
     desc:'Назарбаев Университет — лучший в Центральной Азии. Финансы и банковское дело. Стажировки, конференции, международные программы. Айдос растёт быстро.',
     fc:'Грант — снял депозит с процентами. Не грант — беззалоговый кредит под госгарантию.',
-    skills:[{t:'Финансы',c:'#0f2844',b:'#e6f1f8'},{t:'Аналитика',c:'#c9a03a',b:'#fdf6e3'},{t:'Networking',c:'#3a9e6a',b:'#e8f6ee'}],
-    latlng:[51.0904, 71.3984], zoom:15,
+    skills:[{t:'Финансы',c:'#1A2E5A',b:'#EEF2FF'},{t:'Аналитика',c:'#FFD21F',b:'#FFFBE8'},{t:'Networking',c:'#2ECC40',b:'#EDFFF0'}],
+    latlng:[51.0892, 71.4218], zoom:14,
     next:[{key:'ob2', label:'🏠 Общежитие'},{key:'fc', label:'🏦 Финансовый центр'}]
   },
   ob2: {
@@ -129,11 +129,11 @@ const NODES = {
     age:'18–23 лет', title:'КАМПУС УНИВЕРСИТЕТА 🏠',
     charImg: CHAR_IMGS[5],
     bubble:'Учусь!',
-    loc:'Студенческий кампус NU, пр. Қабанбай батыр',
+    loc:'Студенческий кампус NU, Астана',
     desc:'Кампус — это целый город: стартапы, хакатоны, библиотека до полуночи. Айдос не спит, строит модели, спорит с профессорами. Тут куётся будущее.',
     fc:'Кредит закрывает учёбу. После выпуска — 10 лет на погашение, без штрафов за досрочку.',
-    skills:[{t:'IT & финтех',c:'#3a9e6a',b:'#e8f6ee'},{t:'Исследования',c:'#2a7a8c',b:'#e6f4f8'},{t:'Стартап',c:'#d97b3a',b:'#fef3e8'}],
-    latlng:[51.0875, 71.3960], zoom:15,
+    skills:[{t:'IT & финтех',c:'#2ECC40',b:'#EDFFF0'},{t:'Исследования',c:'#3A7BD5',b:'#EEF5FF'},{t:'Стартап',c:'#FF8C42',b:'#FFF3E8'}],
+    latlng:[51.0820, 71.3850], zoom:14,
     next:[{key:'fc', label:'🏦 Финансовый центр'}]
   },
   fc: {
@@ -141,43 +141,25 @@ const NODES = {
     age:'23+ лет', title:'АО «ФИНАНСОВЫЙ ЦЕНТР» 🏦',
     charImg: CHAR_IMGS[6],
     bubble:'Мечта!',
-    loc:'АО «Финансовый центр», пр. Мәңгілік Ел, 18',
+    loc:'ул. Мәңгілік Ел, 18, Астана',
     desc:'Айдос достиг своей мечты! Работает в организации, которая инвестирует в образование детей Казахстана. Теперь он сам строит это будущее — для следующего Айдоса. 🇰🇿',
     fc:'С рождения до диплома — депозит, ваучер, кредит. Незаметно. Именно поэтому Айдос здесь.',
-    skills:[{t:'Инвестиции в будущее',c:'#c9a03a',b:'#fdf6e3'},{t:'Казахстан 2050',c:'#c45c5c',b:'#fceaea'}],
-    latlng:[51.1176, 71.4363], zoom:16,
+    skills:[{t:'Инвестиции в будущее',c:'#FFD21F',b:'#FFFBE8'},{t:'Казахстан 2050',c:'#FF3B3B',b:'#FFF0F0'}],
+    latlng:[51.1120, 71.4780], zoom:14,
     next:[]
   }
 };
-
-// Обработка ошибок загрузки изображений персонажей
-document.querySelectorAll('.char-img').forEach(img => {
-  img.addEventListener('error', function() {
-    this.style.display = 'none';
-    const fallback = this.parentElement.querySelector('.char-fallback');
-    if (fallback) fallback.style.display = 'flex';
-  });
-});
 
 // ══════════════════════════════════════════════════
 //  MAP SETUP
 // ══════════════════════════════════════════════════
 const map = L.map('map', {
     zoomControl: false,
-    dragging: true,
-    scrollWheelZoom: true,
-    touchZoom: true,
-    doubleClickZoom: true,
-    boxZoom: true,
-    keyboard: true,
-    attributionControl: false,
-    wheelDebounceTime: 40,
-    wheelPxPerZoomLevel: 70
+    dragging: false,
+    scrollWheelZoom: false,
+    attributionControl: false
 });
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-  opacity: 0.95,
-  maxZoom: 19
-}).addTo(map);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { opacity: 1 }).addTo(map);
 L.control.zoom({ position: 'topleft' }).addTo(map);
 map.setView(NODES.rd.latlng, NODES.rd.zoom);
 
@@ -194,18 +176,19 @@ const CONNECTIONS = [
 const lineObjs = {};
 CONNECTIONS.forEach(([a,b]) => {
   const line = L.polyline([NODES[a].latlng, NODES[b].latlng], {
-    color: '#b8c5d6', weight: 2.5, opacity: 0.55, dashArray: '8,6'
+    color: '#aaa', weight: 2, opacity: 0.35, dashArray: '6,5'
   }).addTo(map);
   lineObjs[a+'_'+b] = line;
 });
 
 function mkIcon(emoji, active, visited) {
-    const s = active ? 48 : 38;
-    const state = active ? 'active' : visited ? 'visited' : 'default';
-    const fs = active ? 22 : 16;
+    const s = active ? 50 : 36;
+    const bg = active ? '#FFD21F' : visited ? '#c8e6c9' : '#FFF8E1';
+    const bdr = active ? '4px solid #1A1A1A' : '3px solid #1A1A1A';
+    const sh = active ? '3px 3px 0 #1A1A1A' : '2px 2px 0 #1A1A1A';
     return L.divIcon({
         className: '',
-        html: `<div class="map-marker map-marker--${state}" style="width:${s}px;height:${s}px;font-size:${fs}px;">${emoji}</div>`,
+        html: `<div style="width:${s}px;height:${s}px;background:${bg};border:${bdr};border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:${active?22:15}px;box-shadow:${sh};cursor:pointer;">${emoji}</div>`,
         iconSize: [s, s],
         iconAnchor: [s/2, s/2]
     });
@@ -231,7 +214,7 @@ function highlightLine(fromKey, toKey) {
   const k1 = fromKey+'_'+toKey;
   const k2 = toKey+'_'+fromKey;
   const line = lineObjs[k1] || lineObjs[k2];
-  if (line) line.setStyle({ color: '#e8b84a', weight: 4, opacity: 0.95, dashArray: null });
+  if (line) line.setStyle({ color: '#FFD21F', weight: 4, opacity: 0.9, dashArray: '10,6' });
 }
 
 // ══════════════════════════════════════════════════
@@ -251,8 +234,7 @@ Object.values(NODES).forEach((w) => {
     const skillsHtml = w.skills ? `<div class="skills">${tags}</div>` : '';
     d.innerHTML = `
       <div class="char-wrap">
-        <img src="${w.charImg}" alt="Айдос" class="char-img" onerror="this.parentElement.setAttribute('data-error', 'true'); this.style.display='none'">
-        <div class="char-fallback">${w.emoji}</div>
+        <img src="${w.charImg}" alt="Айдос" style="width:100%;height:100%;object-fit:contain;" onerror="this.style.display='none'">
         <div class="bubble">${w.bubble}</div>
       </div>
       <div class="age-badge">${w.age}</div>
@@ -264,7 +246,7 @@ Object.values(NODES).forEach((w) => {
         <div class="fc-strip-icon">🏦</div>
         <div class="fc-strip-text">${w.fc}</div>
       </div>
-      ${w.next.length === 0 ? '<div class="finish-container"><span class="finish-badge">🏆 ФИНИШ!</span></div>' : ''}
+      ${w.next.length === 0 ? '<div style="margin-top:6px"><span class="finish-badge">🏆 ФИНИШ!</span></div>' : ''}
     `;
     sw.appendChild(d);
 });
@@ -399,7 +381,7 @@ function goBackTo(idx) {
     const a = history[k-1], b = history[k];
     const lk1 = a+'_'+b, lk2 = b+'_'+a;
     const line = lineObjs[lk1] || lineObjs[lk2];
-    if (line) line.setStyle({ color: '#b8c5d6', weight: 2.5, opacity: 0.55, dashArray: '8,6' });
+    if (line) line.setStyle({ color: '#aaa', weight: 2, opacity: 0.35, dashArray: '6,5' });
   }
   markers[key].setIcon(mkIcon(NODES[key].emoji, true, false));
 

@@ -6,17 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Путь Айдоса — Финансовый Центр</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
-    <link rel="stylesheet" href="css_copy.css">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Bangers&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,500;9..40,600;9..40,700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
 </head>
 <body>
 
 <div id="header">
     <div>
-        <div id="h-title" style="font-family:'Bangers',cursive;color:#FFD21F;font-size:1.5rem;letter-spacing:2px;text-shadow:2px 2px 0 #000">
-            🗺️ ПУТЬ АЙДОСА
-        </div>
-        <div class="sub">Астана · Твой путь к Финансовому Центру</div>
+        <div id="h-title">Путь <span>Айдоса</span></div>
+        <div class="sub">Астана · от рождения до Финансового центра</div>
     </div>
     <div id="dots"></div>
 </div>
@@ -25,22 +23,22 @@
     <div id="map-wrap">
         <div id="map"></div>
         <div id="map-popup"><div id="map-popup-inner"></div></div>
-        <div id="hint">Нажми на активную точку — появится выбор пути!</div>
+        <div id="hint">Точка — следующий шаг · Карту можно двигать мышью и тачпадом</div>
     </div>
     <div id="panel">
         <div id="slides-wrap"></div>
         <div id="nav">
-            <button class="nav-btn" id="bp">◀</button>
+            <button class="nav-btn" id="bp" aria-label="Назад к предыдущему шагу">◀</button>
             <div id="prog">
                 <span><span id="cn">1</span>/<span id="tn">?</span></span>
                 <small>ШАГ ПУТИ</small>
             </div>
-            <button class="nav-btn" id="bn">▶</button>
+            <button class="nav-btn" id="bn" aria-label="Вперед к следующему шагу">▶</button>
         </div>
     </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-<script src="script_copy.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
