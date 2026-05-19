@@ -1,0 +1,293 @@
+/* ══════════════════════════════════════
+   FC 3D Interactive — Main Stylesheet
+   ══════════════════════════════════════ */
+
+:root {
+  --gold: #b8922e;
+  --gold-light: #d4a843;
+  --gold-glow: rgba(180, 146, 46, 0.3);
+  --dark: #f5f0e8;
+  --dark-card: rgba(255, 255, 255, 0.88);
+  --text: #2a1f0e;
+  --text-dim: rgba(42, 31, 14, 0.55);
+  --radius: 16px;
+}
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html { overflow-x: hidden; }
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: #f5f0e8;
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+/* ── Canvas ── */
+#webgl-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+/* ── Scroll spacer — invisible height to drive scroll ── */
+#scroll-spacer {
+  width: 1px;
+  height: 900vh; /* 9 scenes × 100vh each */
+  position: relative;
+  z-index: -1;
+}
+
+/* ── UI Overlay ── */
+#ui-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+#ui-overlay > * {
+  pointer-events: auto;
+}
+
+/* ── Progress Bar ── */
+#progress-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  z-index: 20;
+}
+#progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--gold), var(--gold-light));
+  box-shadow: 0 0 12px var(--gold-glow);
+  transition: width 0.15s ease-out;
+}
+
+/* ── Nav Dots ── */
+#nav-dots {
+  position: absolute;
+  right: 28px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: center;
+}
+.nav-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid rgba(180, 146, 46, 0.5);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+}
+.nav-dot.active {
+  background: var(--gold);
+  border-color: var(--gold);
+  box-shadow: 0 0 14px var(--gold-glow);
+  transform: scale(1.3);
+}
+.nav-dot:hover {
+  border-color: var(--gold);
+}
+.nav-dot::after {
+  content: attr(data-label);
+  position: absolute;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--dark-card);
+  color: var(--gold);
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid rgba(212, 168, 67, 0.15);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  backdrop-filter: blur(10px);
+}
+.nav-dot:hover::after {
+  opacity: 1;
+}
+
+/* ── Age Display ── */
+#age-display {
+  position: absolute;
+  left: 32px;
+  bottom: 32px;
+  font-family: 'Playfair Display', serif;
+  font-size: 2.8rem;
+  font-weight: 900;
+  color: var(--gold);
+  opacity: 0;
+  transition: opacity 0.5s, transform 0.5s;
+  transform: translateY(10px);
+  text-shadow: 0 0 30px var(--gold-glow);
+  pointer-events: none;
+}
+#age-display.visible {
+  opacity: 0.7;
+  transform: translateY(0);
+}
+
+/* ── Info Card ── */
+#info-card {
+  position: absolute;
+  left: 40px;
+  top: 50%;
+  transform: translateY(-50%) translateX(-20px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+  max-width: 380px;
+  background: var(--dark-card);
+  border: 1px solid rgba(180, 146, 46, 0.15);
+  border-radius: var(--radius);
+  padding: 28px 28px 24px;
+  backdrop-filter: blur(20px);
+  opacity: 1;
+  transition: opacity 0.6s cubic-bezier(0.25, 0.8, 0.25, 1),
+              transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+#info-card.hidden {
+  opacity: 0;
+  transform: translateY(-50%) translateX(-40px);
+  pointer-events: none;
+}
+#card-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--gold), #b8922e);
+  color: var(--dark);
+  font-weight: 800;
+  font-size: 0.65rem;
+  padding: 4px 14px;
+  border-radius: 20px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+#card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem;
+  font-weight: 900;
+  line-height: 1.2;
+  margin-bottom: 10px;
+  color: #1a1408;
+}
+#card-desc {
+  font-size: 0.88rem;
+  line-height: 1.75;
+  color: var(--text-dim);
+  margin-bottom: 16px;
+}
+#card-fc {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border-top: 1px solid rgba(212, 168, 67, 0.12);
+  padding-top: 14px;
+}
+.fc-icon { font-size: 1.2rem; flex-shrink: 0; }
+#card-fc-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--gold);
+  line-height: 1.6;
+}
+
+/* ── Scroll Hint ── */
+#scroll-hint {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--gold);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: 0.8;
+  transition: opacity 0.5s;
+}
+#scroll-hint.hidden { opacity: 0; pointer-events: none; }
+.hint-arrow {
+  font-size: 1.4rem;
+  animation: hint-bounce 2s ease-in-out infinite;
+}
+@keyframes hint-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(8px); }
+}
+
+/* ── Loader ── */
+#loader {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: #f5f0e8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.8s;
+}
+#loader.done {
+  opacity: 0;
+  pointer-events: none;
+}
+.loader-inner {
+  text-align: center;
+}
+.loader-ring {
+  width: 48px;
+  height: 48px;
+  border: 3px solid rgba(180, 146, 46, 0.2);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loader-inner p {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  #info-card {
+    left: 16px;
+    right: 16px;
+    max-width: none;
+    top: auto;
+    bottom: 80px;
+    transform: translateY(0);
+    padding: 20px;
+  }
+  #info-card.hidden {
+    transform: translateY(20px);
+  }
+  #card-title { font-size: 1.4rem; }
+  #nav-dots { right: 12px; gap: 10px; }
+  #age-display { left: 16px; bottom: 16px; font-size: 2rem; }
+}

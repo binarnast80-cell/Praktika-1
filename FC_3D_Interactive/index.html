@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Невидимый Ангел — Финансовый Центр Астаны</title>
+  <meta name="description" content="Интерактивная 3D-презентация: как Финансовый Центр Астаны незримо сопровождает каждого казахстанца от рождения до взрослой жизни.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css">
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <!-- 3D Canvas -->
+  <canvas id="webgl-canvas"></canvas>
+
+  <!-- Scroll spacer — invisible, drives camera -->
+  <div id="scroll-spacer"></div>
+
+  <!-- UI Overlay -->
+  <div id="ui-overlay">
+    <!-- Progress bar -->
+    <div id="progress-bar"><div id="progress-fill"></div></div>
+
+    <!-- Navigation dots -->
+    <nav id="nav-dots"></nav>
+
+    <!-- Age counter -->
+    <div id="age-display"></div>
+
+    <!-- Scene info card -->
+    <div id="info-card" class="hidden">
+      <div id="card-badge"></div>
+      <h2 id="card-title"></h2>
+      <p id="card-desc"></p>
+      <div id="card-fc">
+        <span class="fc-icon">🏦</span>
+        <span id="card-fc-text"></span>
+      </div>
+    </div>
+
+    <!-- Scroll hint -->
+    <div id="scroll-hint">
+      <div class="hint-arrow">↓</div>
+      <span>Листайте вниз для путешествия</span>
+    </div>
+  </div>
+
+  <!-- Loading screen -->
+  <div id="loader">
+    <div class="loader-inner">
+      <div class="loader-ring"></div>
+      <p>Загрузка 3D-мира...</p>
+    </div>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

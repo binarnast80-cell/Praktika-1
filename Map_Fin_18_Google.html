@@ -3,146 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Путь Айдоса — Финансовый Центр</title>
+    <title>Путь Айдоса</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
-    <!-- Google Fonts: Roboto and Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800&family=Roboto:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
-    <!-- Google Material Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <!-- Friendly Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Material Icons Rounded for friendly UI -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" rel="stylesheet" />
     <style>
         :root {
-            --md-sys-color-primary: #1A73E8;
-            --md-sys-color-on-primary: #FFFFFF;
-            --md-sys-color-primary-container: #E8F0FE;
-            --md-sys-color-surface: #FFFFFF;
-            --md-sys-color-on-surface: #202124;
-            --md-sys-color-on-surface-variant: #5F6368;
-            --md-sys-color-surface-container: #F8F9FA;
-            --md-sys-color-outline: #DADCE0;
-            --md-sys-color-outline-variant: #E8EAED;
+            /* Friendly, bright, professional palette */
+            --primary: #3B82F6;        /* Bright blue */
+            --primary-light: #DBEAFE;  /* Very light blue */
+            --secondary: #F59E0B;      /* Friendly amber */
+            --secondary-light: #FEF3C7;/* Very light amber */
+            --success: #10B981;        /* Fresh green */
+            --success-light: #D1FAE5;
+            --accent: #EC4899;         /* Playful pink */
             
-            /* Material Accents */
-            --md-red: #EA4335;
-            --md-red-container: #FCE8E6;
-            --md-green: #34A853;
-            --md-green-container: #E6F4EA;
-            --md-yellow: #FBBC04;
-            --md-yellow-container: #FEF7E0;
-            --md-purple: #9334E6;
-            --md-purple-container: #F3E8FD;
+            --bg-panel: #FFFFFF;
+            --bg-page: #F8FAFC;
+            --text-main: #1E293B;
+            --text-muted: #64748B;
+            --border: #E2E8F0;
             
-            /* Elevations */
-            --md-elevation-1: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
-            --md-elevation-2: 0 1px 2px 0 rgba(60,64,67,0.3), 0 2px 6px 2px rgba(60,64,67,0.15);
-            --md-elevation-3: 0 4px 8px 3px rgba(60,64,67,0.15), 0 1px 3px rgba(60,64,67,0.3);
+            /* Soft, playful shadows */
+            --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.05);
+            --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
+            --shadow-lg: 0 16px 32px rgba(15, 23, 42, 0.12);
+            --shadow-floating: 0 20px 40px rgba(59, 130, 246, 0.15);
             
-            /* Easing */
-            --ease-standard: cubic-bezier(0.4, 0.0, 0.2, 1);
-            --ease-emphasized: cubic-bezier(0.2, 0.0, 0, 1);
+            /* Bouncy animations */
+            --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Roboto', sans-serif;
-            background: var(--md-sys-color-surface-container);
-            color: var(--md-sys-color-on-surface);
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-page);
+            color: var(--text-main);
             height: 100vh;
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            user-select: none;
         }
 
-        /* ── HEADER ─────────────────────────── */
+        /* ── LAYOUT (MAP FULLSCREEN) ── */
+        #map-wrap {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            background: #E2E8F0; /* Fallback before map loads */
+        }
+        #map { width: 100%; height: 100%; }
+
+        /* ── HEADER (FLOATING PILL) ── */
         #header {
-            background: var(--md-sys-color-surface);
-            border-bottom: 1px solid var(--md-sys-color-outline);
+            position: absolute;
+            top: 24px;
+            left: 24px;
+            right: 420px; /* Space for right panel */
+            background: var(--bg-panel);
+            border: 2px solid var(--border);
+            box-shadow: var(--shadow-md);
             padding: 12px 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            flex-shrink: 0;
             z-index: 1000;
-            box-shadow: 0 1px 2px 0 rgba(60,64,67,0.1);
+            border-radius: 100px; /* Pill shape */
+            transition: box-shadow 0.3s var(--ease-smooth), transform 0.3s var(--ease-bounce);
+        }
+        
+        #header:hover {
+            box-shadow: var(--shadow-floating);
+            transform: translateY(-2px);
         }
         
         .logo-wrap {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 16px;
+            cursor: pointer;
+            transition: transform 0.2s var(--ease-bounce);
         }
+        
+        .logo-wrap:hover { transform: scale(1.05); }
+        .logo-wrap:active { transform: scale(0.95); }
 
         .logo-icon {
-            font-size: 24px;
-            color: var(--md-sys-color-primary);
+            font-size: 36px;
+            color: var(--primary);
+            background: var(--primary-light);
+            padding: 8px;
+            border-radius: 50%;
         }
 
         #header h1 {
-            font-family: 'Inter', sans-serif;
-            color: var(--md-sys-color-on-surface);
-            font-size: 1.25rem;
-            font-weight: 700;
+            font-family: 'Nunito', sans-serif;
+            color: var(--text-main);
+            font-size: 1.5rem;
+            font-weight: 800;
             letter-spacing: -0.5px;
-        }
-        #header .sub {
-            color: var(--md-sys-color-on-surface-variant);
-            font-size: 0.8rem;
-            font-weight: 500;
-            margin-top: 2px;
+            line-height: 1;
         }
 
-        /* Step dots (Google Stepper style) */
+        #header .sub {
+            color: var(--text-muted);
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+
+        /* Stepper Nodes */
         #dots {
             display: flex;
-            gap: 8px;
+            gap: 10px;
             align-items: center;
+            background: var(--bg-page);
+            padding: 8px 16px;
+            border-radius: 100px;
         }
+        
         .dot {
-            width: 10px; height: 10px;
+            width: 12px; height: 12px;
+            background: var(--border);
             border-radius: 50%;
-            background: var(--md-sys-color-outline);
             cursor: pointer;
-            transition: all 0.3s var(--ease-standard);
+            transition: all 0.3s var(--ease-bounce);
         }
+        
         .dot.done { 
-            background: var(--md-sys-color-primary); 
-            opacity: 0.5;
+            background: var(--primary); 
+            opacity: 0.4;
         }
+        
         .dot.active { 
-            background: var(--md-sys-color-primary); 
-            width: 24px; 
-            border-radius: 5px; 
+            background: var(--primary); 
+            width: 24px; height: 12px;
+            border-radius: 100px; /* Elongated pill for active */
+            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
         }
+        
         .dot:hover {
-            transform: scale(1.2);
+            background: var(--secondary);
+            transform: scale(1.3);
         }
 
-        /* ── LAYOUT ─────────────────────────── */
-        #main {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-            position: relative;
-        }
-
-        #map-wrap {
-            flex: 1;
-            position: relative;
-        }
-        #map { width: 100%; height: 100%; }
-
-        /* ── SIDE PANEL ─────────────────────── */
+        /* ── SIDE PANEL (FLOATING CARD) ── */
         #panel {
-            width: 360px;
-            flex-shrink: 0;
-            background: var(--md-sys-color-surface);
-            border-left: 1px solid var(--md-sys-color-outline);
+            position: absolute;
+            right: 24px;
+            top: 24px;
+            bottom: 24px;
+            width: 380px;
+            background: var(--bg-panel);
+            border: 2px solid var(--border);
+            box-shadow: var(--shadow-lg);
             display: flex;
             flex-direction: column;
-            position: relative;
+            z-index: 1000;
+            border-radius: 32px;
             overflow: hidden;
-            box-shadow: -2px 0 12px rgba(0,0,0,0.05);
-            z-index: 10;
+            transition: box-shadow 0.3s, transform 0.3s var(--ease-bounce);
+        }
+        
+        #panel:hover {
+            box-shadow: var(--shadow-floating);
+            transform: translateY(-4px);
         }
 
         /* ── SLIDES ─────────────────────────── */
@@ -150,128 +181,130 @@
             flex: 1;
             position: relative;
             overflow: hidden;
+            background: var(--bg-panel);
         }
 
         .slide {
             position: absolute;
             inset: 0;
-            padding: 24px 24px 16px;
+            padding: 32px 24px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
             gap: 16px;
             opacity: 0;
-            transform: translateY(24px);
-            transition: opacity 0.3s var(--ease-standard), transform 0.4s var(--ease-emphasized);
+            transform: scale(0.95) translateY(20px);
+            transition: all 0.4s var(--ease-bounce);
             pointer-events: none;
             visibility: hidden;
             z-index: 1;
-            background: var(--md-sys-color-surface);
             overflow-y: auto;
         }
         .slide.active {
             opacity: 1;
-            transform: translateY(0) !important;
+            transform: scale(1) translateY(0) !important;
             pointer-events: auto;
             visibility: visible;
             z-index: 2;
         }
-        .slide.s-exit-fwd {
-            opacity: 0 !important;
-            transform: translateY(-24px) !important;
-            visibility: visible;
-        }
-        .slide.s-exit-bwd {
-            opacity: 0 !important;
-            transform: translateY(24px) !important;
-            visibility: visible;
-        }
-        .slide.s-enter-fwd {
-            opacity: 0;
-            transform: translateY(24px);
-            visibility: visible;
-        }
-        .slide.s-enter-bwd {
-            opacity: 0;
-            transform: translateY(-24px);
-            visibility: visible;
-        }
+        .slide.s-exit-fwd { opacity: 0 !important; transform: scale(0.95) translateX(-40px) !important; visibility: visible; }
+        .slide.s-exit-bwd { opacity: 0 !important; transform: scale(0.95) translateX(40px) !important; visibility: visible; }
+        .slide.s-enter-fwd { opacity: 0; transform: scale(0.95) translateX(40px); visibility: visible; }
+        .slide.s-enter-bwd { opacity: 0; transform: scale(0.95) translateX(-40px); visibility: visible; }
 
-        /* ── CHARACTER ───────────────────────── */
+        /* Custom Scrollbar */
+        .slide::-webkit-scrollbar { width: 6px; }
+        .slide::-webkit-scrollbar-track { background: transparent; }
+        .slide::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+        .slide::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        /* ── CHARACTER ── */
         .char-wrap {
             width: var(--char-size, 160px);
             height: var(--char-size, 160px);
             position: relative;
             flex-shrink: 0;
             margin-bottom: 8px;
+            cursor: pointer;
+            transition: transform 0.3s var(--ease-bounce);
         }
         .char-wrap img {
             width: 100%;
             height: 100%;
             object-fit: contain;
-            /* Smooth float animation instead of jump */
-            animation: float 4s ease-in-out infinite;
+            animation: soft-float 4s ease-in-out infinite;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));
         }
-        @keyframes float {
+        
+        .char-wrap:hover { transform: scale(1.1) rotate(5deg); }
+        .char-wrap:active { transform: scale(0.9); }
+
+        @keyframes soft-float {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
+            50% { transform: translateY(-10px); }
         }
 
-        /* Google-style speech bubble */
+        /* Friendly bubble */
         .bubble {
             position: absolute;
-            top: 10px;
-            right: -10px;
-            background: var(--md-sys-color-surface);
-            border: 1px solid var(--md-sys-color-outline-variant);
-            border-radius: 16px 16px 16px 4px;
-            padding: 8px 14px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            color: var(--md-sys-color-on-surface);
-            white-space: nowrap;
-            box-shadow: var(--md-elevation-1);
+            top: 0px;
+            right: -20px;
+            background: #FFFFFF;
+            border: 2px solid var(--border);
+            border-radius: 20px 20px 20px 0;
+            padding: 8px 16px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
             z-index: 2;
-            animation: fadeInBubble 0.5s 0.3s both var(--ease-standard);
+            animation: pop-in 0.4s var(--ease-bounce) both;
+            transform-origin: bottom left;
         }
-        @keyframes fadeInBubble {
-            from { opacity: 0; transform: scale(0.9) translateY(4px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
+
+        @keyframes pop-in {
+            0% { opacity: 0; transform: scale(0); }
+            100% { opacity: 1; transform: scale(1); }
         }
 
         /* Age badge */
         .age-badge {
-            background: var(--md-sys-color-primary-container);
-            color: var(--md-sys-color-primary);
-            font-family: 'Inter', sans-serif;
-            font-size: 0.8rem;
-            font-weight: 700;
-            padding: 4px 12px;
+            background: var(--secondary-light);
+            color: #D97706; /* Darker amber for contrast */
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 800;
+            padding: 6px 16px;
             border-radius: 100px;
             letter-spacing: 0.5px;
             text-transform: uppercase;
+            box-shadow: var(--shadow-sm);
             margin-bottom: -4px;
         }
 
         .slide h2 {
-            font-family: 'Inter', sans-serif;
-            font-size: 1.35rem;
-            font-weight: 800;
-            letter-spacing: -0.3px;
-            color: var(--md-sys-color-on-surface);
+            font-family: 'Nunito', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--text-main);
             text-align: center;
             line-height: 1.2;
             margin-bottom: 0;
         }
 
         .loc-tag {
-            color: var(--md-sys-color-on-surface-variant);
-            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
             font-weight: 500;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
+            background: var(--bg-page);
+            padding: 4px 12px;
+            border-radius: 100px;
         }
 
         /* ── PER-SLIDE CHAR SIZE ── */
@@ -294,7 +327,7 @@
             display: none;
             flex-direction: column;
             align-items: center;
-            gap: 5px;
+            gap: 8px;
             pointer-events: none;
             transform: translate(-50%, calc(-100% - 32px));
         }
@@ -302,243 +335,292 @@
         
         #map-popup-inner {
             position: relative;
-            background: var(--md-sys-color-surface);
-            border-radius: 12px;
-            box-shadow: var(--md-elevation-3);
-            padding: 12px;
+            background: var(--bg-panel);
+            border: 2px solid var(--border);
+            box-shadow: var(--shadow-lg);
+            padding: 16px;
+            border-radius: 24px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            min-width: 180px;
-            animation: popUp 0.3s var(--ease-standard);
+            gap: 12px;
+            min-width: 220px;
+            animation: pop-up 0.3s var(--ease-bounce) both;
             transform-origin: bottom center;
         }
         
-        @keyframes popUp {
-            from { opacity: 0; transform: scale(0.9) translateY(8px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
+        #map-popup-inner .popup-title {
+            color: var(--text-muted);
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: center;
+        }
+        
+        @keyframes pop-up {
+            0% { opacity: 0; transform: scale(0.8) translateY(10px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
         }
 
         #map-popup-inner::after {
             content: '';
             position: absolute;
-            bottom: -8px;
+            bottom: -10px;
             left: 50%;
             transform: translateX(-50%);
-            border: 8px solid transparent;
-            border-top-color: var(--md-sys-color-surface);
-            filter: drop-shadow(0 4px 3px rgba(60,64,67,0.15));
+            border: 10px solid transparent;
+            border-top-color: var(--bg-panel);
+            filter: drop-shadow(0 4px 4px rgba(15, 23, 42, 0.05));
+        }
+        
+        #map-popup-inner::before {
+            content: '';
+            position: absolute;
+            bottom: -13px;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 11px solid transparent;
+            border-top-color: var(--border);
+            z-index: -1;
         }
 
         .map-choice-btn {
-            background: var(--md-sys-color-surface);
-            border: 1px solid var(--md-sys-color-outline);
-            border-radius: 8px;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--md-sys-color-primary);
-            padding: 10px 16px;
+            background: var(--bg-page);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--primary);
+            padding: 12px 20px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s var(--ease-bounce);
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 6px;
-            position: relative;
-            overflow: hidden;
+            justify-content: space-between;
+            gap: 12px;
         }
         
         .map-choice-btn:hover {
-            background: var(--md-sys-color-primary-container);
-            border-color: var(--md-sys-color-primary);
-        }
-        
-        /* Ripple effect */
-        .map-choice-btn::after {
-            content: "";
-            position: absolute;
-            background: rgba(26,115,232,0.2);
-            display: block;
-            border-radius: 50%;
-            width: 100px;
-            height: 100px;
-            margin-top: -50px;
-            margin-left: -50px;
-            opacity: 0;
-            transition: all 0.5s;
-        }
-        .map-choice-btn:active::after {
-            width: 0;
-            height: 0;
-            opacity: 1;
-            transition: 0s;
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #FFFFFF;
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.2);
         }
 
+        .map-choice-btn:active { transform: scale(0.95); }
+
         .finish-badge {
-            background: var(--md-green-container);
-            color: var(--md-green);
-            border-radius: 8px;
-            font-family: 'Inter', sans-serif;
-            font-size: 1rem;
-            font-weight: 700;
-            padding: 10px 20px;
+            background: var(--success-light);
+            color: #047857; /* Dark emerald */
+            font-family: 'Nunito', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 900;
+            padding: 12px 24px;
+            border-radius: 24px;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            box-shadow: var(--md-elevation-1);
+            gap: 10px;
+            box-shadow: var(--shadow-sm);
         }
 
         .slide p {
-            font-size: 0.9rem;
-            font-weight: 400;
-            color: var(--md-sys-color-on-surface-variant);
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-muted);
             line-height: 1.6;
             text-align: center;
             margin: 4px 0;
         }
 
-        /* Skill tags */
+        /* Skill tags (Friendly Badges) */
         .skills {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
             justify-content: center;
-            margin-top: 4px;
+            margin-top: 8px;
         }
         .stag {
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: 4px 10px;
-            border-radius: 6px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 800;
+            padding: 6px 14px;
+            border-radius: 100px;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
+            transition: all 0.2s var(--ease-bounce);
+            cursor: pointer;
+        }
+        .stag:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: var(--shadow-md);
         }
 
-        /* ── FC FOOTNOTE (Material Info Card) ── */
+        /* ── FC FOOTNOTE (Friendly Card) ── */
         .fc-strip {
             width: 100%;
-            background: var(--md-sys-color-surface-container);
-            border-radius: 12px;
-            padding: 12px 16px;
-            margin-top: 8px;
+            background: var(--primary-light);
+            border-radius: 20px;
+            padding: 16px;
+            margin-top: 12px;
             display: flex;
             align-items: flex-start;
-            gap: 12px;
-            border: 1px solid var(--md-sys-color-outline-variant);
+            gap: 16px;
+            transition: all 0.3s var(--ease-bounce);
+            cursor: pointer;
         }
+        .fc-strip:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+            background: #EFF6FF;
+        }
+        .fc-strip:active { transform: scale(0.98); }
+        
         .fc-strip-icon {
-            font-size: 1.2rem;
-            color: var(--md-sys-color-primary);
-            flex-shrink: 0;
+            font-size: 24px;
+            color: var(--primary);
+            background: #FFFFFF;
+            padding: 8px;
+            border-radius: 50%;
+            box-shadow: var(--shadow-sm);
         }
+
         .fc-strip-text {
-            font-size: 0.8rem;
-            font-weight: 400;
-            color: var(--md-sys-color-on-surface);
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-main);
             line-height: 1.5;
-            text-align: left;
         }
 
         /* ── NAV ─────────────────────────────── */
         #nav {
-            padding: 16px 24px;
+            padding: 20px 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: var(--md-sys-color-surface);
-            border-top: 1px solid var(--md-sys-color-outline);
+            background: var(--bg-page);
+            border-top: 2px solid var(--border);
             flex-shrink: 0;
             z-index: 2;
+            border-radius: 0 0 32px 32px;
         }
+        
         .nav-btn {
-            width: 48px; height: 48px;
-            background: var(--md-sys-color-surface);
-            border: 1px solid var(--md-sys-color-outline);
-            border-radius: 50%;
-            color: var(--md-sys-color-on-surface);
+            width: 56px; height: 56px;
+            background: #FFFFFF;
+            border: 2px solid var(--border);
+            border-radius: 50%; /* Circle buttons */
+            color: var(--text-main);
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s var(--ease-standard);
-            user-select: none;
+            transition: all 0.2s var(--ease-bounce);
+            box-shadow: var(--shadow-sm);
         }
-        .nav-btn .material-symbols-outlined {
-            font-size: 24px;
-        }
+
+        .nav-btn .material-symbols-rounded { font-size: 28px; transition: transform 0.2s; }
+        
         .nav-btn:hover:not(:disabled) { 
-            background: var(--md-sys-color-surface-container); 
-            box-shadow: var(--md-elevation-1);
+            background: var(--primary); 
+            border-color: var(--primary);
+            color: #FFFFFF;
+            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
+            transform: scale(1.1);
         }
-        .nav-btn:active:not(:disabled) { 
-            background: var(--md-sys-color-outline-variant); 
-        }
+        
+        .nav-btn:active:not(:disabled) { transform: scale(0.9); }
+        
         .nav-btn:disabled { 
-            opacity: 0.3; 
-            cursor: default; 
+            background: var(--bg-page);
+            color: #CBD5E1;
+            border-color: #E2E8F0;
+            box-shadow: none;
+            cursor: not-allowed; 
         }
 
         #prog {
-            font-family: 'Inter', sans-serif;
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--md-sys-color-on-surface);
+            font-family: 'Nunito', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: var(--text-main);
             text-align: center;
         }
         #prog small {
             display: block;
-            font-size: 0.65rem;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.75rem;
             font-weight: 600;
-            color: var(--md-sys-color-on-surface-variant);
-            letter-spacing: 0.5px;
+            color: var(--text-muted);
             text-transform: uppercase;
-            margin-top: 2px;
+            letter-spacing: 0.5px;
+            margin-top: -2px;
         }
 
-        /* Leaflet popup (Material) */
+        /* Leaflet popup */
         .leaflet-popup-content-wrapper {
-            background: var(--md-sys-color-surface) !important;
-            border-radius: 8px !important;
-            box-shadow: var(--md-elevation-2) !important;
-            padding: 4px !important;
+            background: var(--bg-panel) !important;
+            border-radius: 16px !important;
+            box-shadow: var(--shadow-md) !important;
+            padding: 8px !important;
+            border: 2px solid var(--border);
         }
         .leaflet-popup-content {
-            font-family: 'Roboto', sans-serif !important;
-            font-weight: 500 !important;
-            font-size: 0.85rem !important;
-            color: var(--md-sys-color-on-surface) !important;
-            margin: 8px 12px !important;
+            font-family: 'Nunito', sans-serif !important;
+            font-weight: 800 !important;
+            font-size: 0.9rem !important;
+            color: var(--text-main) !important;
+            margin: 4px 8px !important;
+            text-align: center;
         }
         .leaflet-popup-tip {
-            background: var(--md-sys-color-surface) !important;
-            box-shadow: var(--md-elevation-2) !important;
+            background: var(--bg-panel) !important;
+            box-shadow: none !important;
+            border-bottom: 2px solid var(--border);
+            border-right: 2px solid var(--border);
         }
 
-        /* Hint bar */
+        /* Intuitive Hint bar */
         #hint {
             position: absolute;
-            bottom: 24px;
+            bottom: 32px;
             left: 50%;
             transform: translateX(-50%);
-            background: #323232; /* Material Snackbar color */
+            background: var(--secondary);
+            border: 2px solid #D97706;
             color: #FFFFFF;
-            font-size: 0.85rem;
-            font-weight: 400;
-            padding: 12px 24px;
-            border-radius: 4px;
-            z-index: 100;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 800;
+            font-size: 1rem;
+            padding: 16px 32px;
+            border-radius: 100px;
+            z-index: 1000;
             pointer-events: none;
-            transition: opacity 0.5s var(--ease-standard);
-            box-shadow: var(--md-elevation-2);
-            white-space: nowrap;
+            transition: all 0.4s var(--ease-bounce);
+            box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
+            animation: float-hint 3s infinite ease-in-out;
+        }
+        
+        @keyframes float-hint {
+            0%, 100% { transform: translate(-50%, 0); }
+            50% { transform: translate(-50%, -10px); }
         }
 
-        /* Custom Marker Container */
+        #hint.hide {
+            opacity: 0;
+            transform: translate(-50%, 40px) scale(0.8) !important;
+            pointer-events: none;
+        }
+
+        /* Custom Marker Container (Friendly Circles) */
         .md-marker-wrap {
             width: 100%;
             height: 100%;
@@ -546,42 +628,81 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s var(--ease-standard);
+            transition: all 0.3s var(--ease-bounce);
+            position: relative;
+            cursor: pointer;
+            background: #FFFFFF;
+            border: 3px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            color: var(--text-main);
         }
+        
         .md-marker-wrap:hover {
-            transform: scale(1.1);
+            transform: scale(1.2) translateY(-4px) !important;
+            box-shadow: var(--shadow-md) !important;
+            border-color: var(--primary);
+            z-index: 1000;
+        }
+        
+        .md-marker-wrap:active {
+            transform: scale(0.9) !important;
+        }
+        
+        .md-marker-wrap.active-node {
+            background: var(--primary);
+            border-color: #FFFFFF;
+            color: #FFFFFF;
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        }
+        
+        /* Pulse for next available nodes */
+        .md-marker-wrap.next-node::after {
+            content: '';
+            position: absolute;
+            inset: -8px;
+            border: 3px solid var(--secondary);
+            border-radius: 50%;
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+        
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
         }
     </style>
 </head>
 <body>
 
+<div id="map-wrap">
+    <div id="map"></div>
+    <div id="map-popup"><div id="map-popup-inner"></div></div>
+    <!-- Obvious friendly hint -->
+    <div id="hint">
+        <span class="material-symbols-rounded" style="font-size: 28px;">touch_app</span> 
+        <span id="hint-text">Нажмите на пульсирующий маркер, чтобы выбрать путь!</span>
+    </div>
+</div>
+
 <div id="header">
-    <div class="logo-wrap">
-        <span class="material-symbols-outlined logo-icon">explore</span>
+    <div class="logo-wrap" onclick="location.reload()" title="Начать заново">
+        <span class="material-symbols-rounded logo-icon">explore</span>
         <div>
             <h1>Путь Айдоса</h1>
-            <div class="sub">Астана · Твой путь к Финансовому Центру</div>
+            <div class="sub">Шаг за шагом к успеху</div>
         </div>
     </div>
     <div id="dots"></div>
 </div>
 
-<div id="main">
-    <div id="map-wrap">
-        <div id="map"></div>
-        <div id="map-popup"><div id="map-popup-inner"></div></div>
-        <div id="hint"><span class="material-symbols-outlined" style="font-size: 18px;">touch_app</span>Нажмите на активную точку на карте, чтобы выбрать путь</div>
-    </div>
-    <div id="panel">
-        <div id="slides-wrap"></div>
-        <div id="nav">
-            <button class="nav-btn" id="bp"><span class="material-symbols-outlined">chevron_left</span></button>
-            <div id="prog">
-                <span><span id="cn">1</span> / <span id="tn">?</span></span>
-                <small>Шаг пути</small>
-            </div>
-            <button class="nav-btn" id="bn"><span class="material-symbols-outlined">chevron_right</span></button>
+<div id="panel">
+    <div id="slides-wrap"></div>
+    <div id="nav">
+        <button class="nav-btn" id="bp" title="Назад"><span class="material-symbols-rounded">arrow_back</span></button>
+        <div id="prog">
+            <span><span id="cn" style="color:var(--primary);">1</span> / <span id="tn">?</span></span>
+            <small>Шаг пути</small>
         </div>
+        <button class="nav-btn" id="bn" title="Вперед"><span class="material-symbols-rounded">arrow_forward</span></button>
     </div>
 </div>
 
@@ -591,13 +712,13 @@
 //  CHARACTER IMAGE FILES
 // ══════════════════════════════════════════════════
 const CHAR_IMGS = [
-    'C://Users//User//Downloads//char_1_sads.png',      // 1. Роддом / Детский сад
-    'C://Users//User//Downloads//char_2_schools.png',   // 2. Школа
-    'C://Users//User//Downloads//char_3_musicss.png',   // 3. Кружки
-    'C://Users//User//Downloads//char_4_martials.png',  // 4. Казақ күресі
-    'C://Users//User//Downloads//char_5_colleges.png',  // 5. Колледж
-    'C://Users//User//Downloads//char_6_unis.png',      // 6. Университет
-    'C://Users//User//Downloads//char_7_fcs.png',       // 7. Финансовый центр
+    'C://Users//User//Downloads//char_1_sads.png',      
+    'C://Users//User//Downloads//char_2_schools.png',   
+    'C://Users//User//Downloads//char_3_musicss.png',   
+    'C://Users//User//Downloads//char_4_martials.png',  
+    'C://Users//User//Downloads//char_5_colleges.png',  
+    'C://Users//User//Downloads//char_6_unis.png',      
+    'C://Users//User//Downloads//char_7_fcs.png',       
 ];
 
 // ══════════════════════════════════════════════════
@@ -605,14 +726,14 @@ const CHAR_IMGS = [
 // ══════════════════════════════════════════════════
 const NODES = {
   rd: {
-    key:'rd', emoji:'🏥',
+    key:'rd', emoji:'🍼',
     age:'0 лет', title:'Роддом',
     charImg: CHAR_IMGS[0],
     bubble:'Уа-уа!',
     loc:'Роддом №1, Астана',
     desc:'Айдос только появился на свет — крошечный, громкий, весь в будущем! Родители ещё не знают, каким он вырастет. Но уже сейчас можно сделать первый шаг.',
-    fc:'Открыл депозит на новорождённого → государство зачислило стартовые 235 920 ₸.',
-    skills:[{t:'День рождения',c:'#EA4335',b:'#FCE8E6'},{t:'Первый вдох',c:'#1A73E8',b:'#E8F0FE'},{t:'Мечты',c:'#9334E6',b:'#F3E8FD'}],
+    fc:'Открыт депозит на новорождённого → государство зачислило стартовые 235 920 ₸.',
+    skills:[{t:'Семья',c:'#EC4899',b:'#FCE7F3'},{t:'Первый вдох',c:'#3B82F6',b:'#DBEAFE'}],
     latlng:[51.1700, 71.4200], zoom:13,
     next:[{key:'kg', label:'В садик'}]
   },
@@ -622,124 +743,124 @@ const NODES = {
     charImg: CHAR_IMGS[0],
     bubble:'Привет!',
     loc:'Мкр. Сарыарка, Астана',
-    desc:'Айдос делает первые шаги! Новые друзья, казахские сказки и первые слова на трёх языках. Мечты такие большие, как весь Казахстан!',
+    desc:'Айдос делает первые шаги! Новые друзья, сказки и первые слова. Мечты такие большие, как весь Казахстан!',
     fc:'Депозит копится: банк начисляет %, государство добавляет премию 5–7% в год.',
-    skills:[{t:'Дружба',c:'#FBBC04',b:'#FEF7E0'},{t:'Қазақша',c:'#34A853',b:'#E6F4EA'},{t:'Творчество',c:'#9334E6',b:'#F3E8FD'}],
+    skills:[{t:'Дружба',c:'#F59E0B',b:'#FEF3C7'},{t:'Игры',c:'#10B981',b:'#D1FAE5'}],
     latlng:[51.1620, 71.3780], zoom:14,
-    next:[{key:'kr1', label:'Доп. кружки'},{key:'sc', label:'В школу'}]
+    next:[{key:'kr1', label:'Кружки'},{key:'sc', label:'В школу'}]
   },
   kr1: {
     key:'kr1', emoji:'🎨',
-    age:'4–6 лет', title:'Кружки (Дошкол.)',
+    age:'4–6 лет', title:'Творчество',
     charImg: CHAR_IMGS[2],
-    bubble:'Творю!',
-    loc:'ДЮЦ «Жас Өркен», Астана',
-    desc:'Рисование, лепка, танцы — Айдос пробует всё! Пальцы в краске, язык высунут от старания. Каждый кружок — это новый мир, открытый настежь.',
+    bubble:'Я рисую!',
+    loc:'ДЮЦ «Жас Өркен»',
+    desc:'Рисование, лепка, танцы — Айдос пробует всё! Пальцы в краске, язык высунут от старания. Каждый кружок — это новый открытый мир.',
     fc:'Накопления защищены от арестов и списаний — до 10 млн ₸ под госгарантией.',
-    skills:[{t:'Творчество',c:'#9334E6',b:'#F3E8FD'},{t:'Усидчивость',c:'#1A73E8',b:'#E8F0FE'},{t:'Любопытство',c:'#FBBC04',b:'#FEF7E0'}],
+    skills:[{t:'Фантазия',c:'#8B5CF6',b:'#EDE9FE'},{t:'Интерес',c:'#3B82F6',b:'#DBEAFE'}],
     latlng:[51.1780, 71.3500], zoom:14,
     next:[{key:'sc', label:'В школу'}]
   },
   sc: {
-    key:'sc', emoji:'📚',
-    age:'7–11 лет', title:'Начальная школа',
+    key:'sc', emoji:'🎒',
+    age:'7–11 лет', title:'Школа',
     charImg: CHAR_IMGS[1],
     bubble:'Пятёрка!',
     loc:'Школа №47, Левобережье',
-    desc:'Первый звонок! Айдос в синей форме с огромным портфелем. Математика, казахский, русский — и первые пятёрки в дневнике. Жизнь становится серьёзнее.',
+    desc:'Первый звонок! Айдос в синей форме с огромным портфелем. Математика, чтение и первые пятёрки в дневнике.',
     fc:'Госпремия на депозит начисляется каждый год — деньги растут, пока Айдос сидит на уроках.',
-    skills:[{t:'Математика',c:'#1A73E8',b:'#E8F0FE'},{t:'Чтение',c:'#EA4335',b:'#FCE8E6'},{t:'Спорт',c:'#34A853',b:'#E6F4EA'}],
+    skills:[{t:'Знания',c:'#3B82F6',b:'#DBEAFE'},{t:'Спорт',c:'#10B981',b:'#D1FAE5'}],
     latlng:[51.1850, 71.4550], zoom:14,
-    next:[{key:'kr2', label:'Доп. кружки'},{key:'co', label:'В колледж'}]
+    next:[{key:'kr2', label:'Музыка'},{key:'co', label:'В колледж'}]
   },
   kr2: {
     key:'kr2', emoji:'🎵',
-    age:'10–14 лет', title:'Кружки (Школа)',
+    age:'10–14 лет', title:'Домбра',
     charImg: CHAR_IMGS[2],
-    bubble:'♪ кюй ♪',
-    loc:'Школа им. Курмангазы, Астана',
-    desc:'По вечерам — домбра. Пальцы болят, зато кюй Курмангазы звучит всё лучше. Айдос учится слышать душу казахской музыки — и терпеть, и добиваться.',
-    fc:'% по депозиту капают. Никто не тронет — защита от арестов и третьих лиц.',
-    skills:[{t:'Домбра',c:'#9334E6',b:'#F3E8FD'},{t:'Нотная грамота',c:'#FBBC04',b:'#FEF7E0'},{t:'Дисциплина',c:'#1A73E8',b:'#E8F0FE'}],
+    bubble:'Слушай!',
+    loc:'Музыкальная школа',
+    desc:'По вечерам — домбра. Пальцы болят, зато музыка звучит всё лучше. Айдос учится терпеть и добиваться результата.',
+    fc:'Проценты по депозиту капают стабильно. Никто не тронет — отличная защита.',
+    skills:[{t:'Музыка',c:'#8B5CF6',b:'#EDE9FE'},{t:'Упорство',c:'#F59E0B',b:'#FEF3C7'}],
     latlng:[51.1950, 71.4720], zoom:14,
     next:[{key:'co', label:'В колледж'}]
   },
   co: {
-    key:'co', emoji:'🎒',
+    key:'co', emoji:'🎓',
     age:'15–18 лет', title:'Колледж',
     charImg: CHAR_IMGS[4],
-    bubble:'Профи!',
-    loc:'Колледж «Байтерек», Астана',
-    desc:'Время серьёзных решений. Айдос влюбился в экономику — таблицы, рынки, цифры. Олимпиады, английский, первые стажировки. Всё ради большой мечты.',
-    fc:'Накопленный депозит идёт на оплату колледжа. Не хватает — кредит до 10 лет без залога.',
-    skills:[{t:'Экономика',c:'#1A73E8',b:'#E8F0FE'},{t:'English',c:'#34A853',b:'#E6F4EA'},{t:'Лидерство',c:'#EA4335',b:'#FCE8E6'}],
+    bubble:'Буду профи!',
+    loc:'Колледж «Байтерек»',
+    desc:'Время серьёзных решений. Олимпиады, английский, первые проекты. Всё ради большой и светлой мечты.',
+    fc:'Накопленный депозит идёт на оплату. Не хватает — доступен кредит до 10 лет.',
+    skills:[{t:'Профессия',c:'#3B82F6',b:'#DBEAFE'},{t:'Английский',c:'#10B981',b:'#D1FAE5'}],
     latlng:[51.1480, 71.4050], zoom:13,
-    next:[{key:'kr3', label:'Доп. кружки'},{key:'ob1', label:'Общежитие'},{key:'un', label:'В универ'}]
+    next:[{key:'kr3', label:'Спорт'},{key:'ob1', label:'Общежитие'},{key:'un', label:'Университет'}]
   },
   kr3: {
     key:'kr3', emoji:'🥋',
-    age:'15–19 лет', title:'Казақ Күресі',
+    age:'15–19 лет', title:'Казақ күресі',
     charImg: CHAR_IMGS[3],
-    bubble:'Батыр!',
-    loc:'СК «Казахстан», Астана',
-    desc:'Три раза в неделю — тренировки. Айдос — БАТЫР! Красный пояс, золото на городских соревнованиях. Воля плюс тело плюс характер — это и есть победа.',
-    fc:'Ваучер покрыл колледж. Айдос думает о борьбе, не о деньгах.',
-    skills:[{t:'Борьба',c:'#EA4335',b:'#FCE8E6'},{t:'Стратегия',c:'#1A73E8',b:'#E8F0FE'},{t:'Характер',c:'#FBBC04',b:'#FEF7E0'}],
+    bubble:'Я сильный!',
+    loc:'Спорткомплекс',
+    desc:'Три раза в неделю — тренировки. Золото на городских соревнованиях. Воля, тело и характер — это и есть победа.',
+    fc:'Ваучер покрыл обучение. Айдос думает о спорте, а не о деньгах.',
+    skills:[{t:'Сила',c:'#EF4444',b:'#FEE2E2'},{t:'Дисциплина',c:'#F59E0B',b:'#FEF3C7'}],
     latlng:[51.1300, 71.3700], zoom:13,
-    next:[{key:'ob1', label:'Общежитие'},{key:'un', label:'В универ'}]
+    next:[{key:'ob1', label:'Общежитие'},{key:'un', label:'Университет'}]
   },
   ob1: {
     key:'ob1', emoji:'🏠',
     age:'17–22 лет', title:'Общежитие',
     charImg: CHAR_IMGS[5],
-    bubble:'Сосед!',
-    loc:'Студенческий корпус, Астана',
-    desc:'Первый раз вдали от дома. Маленькая комната, общая кухня, новые друзья из разных городов Казахстана. Учишься быть взрослым — считать деньги и время.',
-    fc:'Образовательный кредит с отсрочкой: платить начнёшь через 6 месяцев после выпуска.',
-    skills:[{t:'Самостоятельность',c:'#FBBC04',b:'#FEF7E0'},{t:'Тайм-менеджмент',c:'#1A73E8',b:'#E8F0FE'},{t:'Команда',c:'#34A853',b:'#E6F4EA'}],
+    bubble:'Мы команда!',
+    loc:'Студгородок',
+    desc:'Первый раз вдали от дома. Маленькая комната, общая кухня, новые веселые друзья. Учишься быть самостоятельным.',
+    fc:'Образовательный кредит с отсрочкой: платить нужно только через 6 месяцев после выпуска.',
+    skills:[{t:'Самостоятельность',c:'#F59E0B',b:'#FEF3C7'},{t:'Друзья',c:'#3B82F6',b:'#DBEAFE'}],
     latlng:[51.0980, 71.4480], zoom:14,
-    next:[{key:'un', label:'В универ'}]
+    next:[{key:'un', label:'Университет'}]
   },
   un: {
     key:'un', emoji:'🏛️',
-    age:'18–22 лет', title:'Назарбаев Ун-т',
+    age:'18–22 лет', title:'Университет',
     charImg: CHAR_IMGS[5],
-    bubble:'Диплом!',
-    loc:'Nazarbayev University, Астана',
-    desc:'Назарбаев Университет — лучший в Центральной Азии. Финансы и банковское дело. Стажировки, конференции, международные программы. Айдос растёт быстро.',
-    fc:'Грант — снял депозит с процентами. Не грант — беззалоговый кредит под госгарантию.',
-    skills:[{t:'Финансы',c:'#1A73E8',b:'#E8F0FE'},{t:'Аналитика',c:'#FBBC04',b:'#FEF7E0'},{t:'Networking',c:'#34A853',b:'#E6F4EA'}],
+    bubble:'Знания!',
+    loc:'Nazarbayev University',
+    desc:'Лучший университет! Финансы, банкинг, стажировки. Айдос растёт очень быстро и заводит полезные знакомства.',
+    fc:'Грант — снял депозит с процентами. Если не грант — есть беззалоговый кредит.',
+    skills:[{t:'Финансы',c:'#3B82F6',b:'#DBEAFE'},{t:'Аналитика',c:'#8B5CF6',b:'#EDE9FE'}],
     latlng:[51.0892, 71.4218], zoom:14,
-    next:[{key:'ob2', label:'Общежитие'},{key:'fc', label:'В финцентр'}]
+    next:[{key:'ob2', label:'Кампус'},{key:'fc', label:'Финцентр'}]
   },
   ob2: {
-    key:'ob2', emoji:'🏠',
+    key:'ob2', emoji:'💻',
     age:'18–23 лет', title:'Кампус',
     charImg: CHAR_IMGS[5],
-    bubble:'Учусь!',
-    loc:'Студенческий кампус NU, Астана',
-    desc:'Кампус — это целый город: стартапы, хакатоны, библиотека до полуночи. Айдос не спит, строит модели, спорит с профессорами. Тут куётся будущее.',
-    fc:'Кредит закрывает учёбу. После выпуска — 10 лет на погашение, без штрафов за досрочку.',
-    skills:[{t:'IT & финтех',c:'#34A853',b:'#E6F4EA'},{t:'Исследования',c:'#1A73E8',b:'#E8F0FE'},{t:'Стартап',c:'#FBBC04',b:'#FEF7E0'}],
+    bubble:'Стартап!',
+    loc:'Кампус NU',
+    desc:'Кампус — это целый город. Стартапы, хакатоны до полуночи. Здесь куётся настоящее будущее.',
+    fc:'Кредит закрывает учёбу. 10 лет на погашение, без штрафов за досрочку.',
+    skills:[{t:'Технологии',c:'#3B82F6',b:'#DBEAFE'},{t:'Проекты',c:'#10B981',b:'#D1FAE5'}],
     latlng:[51.0820, 71.3850], zoom:14,
-    next:[{key:'fc', label:'В финцентр'}]
+    next:[{key:'fc', label:'Финцентр'}]
   },
   fc: {
-    key:'fc', emoji:'🏦',
-    age:'23+ лет', title:'АО «Финцентр»',
+    key:'fc', emoji:'🏢',
+    age:'23+ лет', title:'Финансовый центр',
     charImg: CHAR_IMGS[6],
-    bubble:'Мечта!',
-    loc:'ул. Мәңгілік Ел, 18, Астана',
-    desc:'Айдос достиг своей мечты! Работает в организации, которая инвестирует в образование детей Казахстана. Теперь он сам строит это будущее — для следующего Айдоса. 🇰🇿',
-    fc:'С рождения до диплома — депозит, ваучер, кредит. Незаметно. Именно поэтому Айдос здесь.',
-    skills:[{t:'Инвестиции',c:'#FBBC04',b:'#FEF7E0'},{t:'Казахстан 2050',c:'#EA4335',b:'#FCE8E6'}],
+    bubble:'Я смог!',
+    loc:'Мәңгілік Ел, 18',
+    desc:'Ура! Айдос достиг цели! Теперь он сам помогает другим детям Казахстана получить образование, работая в Финцентре.',
+    fc:'С рождения до диплома — всё прошло гладко. Именно поэтому Айдос здесь!',
+    skills:[{t:'Успех',c:'#F59E0B',b:'#FEF3C7'},{t:'Помощь другим',c:'#10B981',b:'#D1FAE5'}],
     latlng:[51.1120, 71.4780], zoom:14,
     next:[]
   }
 };
 
 // ══════════════════════════════════════════════════
-//  MAP SETUP
+//  MAP SETUP (FRIENDLY LIGHT MODE)
 // ══════════════════════════════════════════════════
 const map = L.map('map', {
     zoomControl: false,
@@ -747,11 +868,17 @@ const map = L.map('map', {
     scrollWheelZoom: false,
     attributionControl: false
 });
-L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { opacity: 1 }).addTo(map);
-L.control.zoom({ position: 'topleft' }).addTo(map);
+
+// CartoDB Voyager tiles - bright and colorful
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { 
+    opacity: 1,
+    subdomains: 'abcd',
+    maxZoom: 19
+}).addTo(map);
+
 map.setView(NODES.rd.latlng, NODES.rd.zoom);
 
-// Draw all connection lines between nodes
+// Draw all connection lines
 const CONNECTIONS = [
   ['rd','kg'],['kg','kr1'],['kg','sc'],['kr1','sc'],
   ['sc','kr2'],['sc','co'],['kr2','co'],
@@ -764,30 +891,31 @@ const CONNECTIONS = [
 const lineObjs = {};
 CONNECTIONS.forEach(([a,b]) => {
   const line = L.polyline([NODES[a].latlng, NODES[b].latlng], {
-    color: '#DADCE0', weight: 3, opacity: 0.8, dashArray: '6,6'
+    color: '#CBD5E1', weight: 4, opacity: 0.8, dashArray: '8,8', lineCap: 'round'
   }).addTo(map);
   lineObjs[a+'_'+b] = line;
 });
 
-function mkIcon(emoji, active, visited) {
-    const s = active ? 48 : 36;
-    const bg = active ? '#1A73E8' : visited ? '#E8F0FE' : '#FFFFFF';
-    const bdr = active ? 'none' : '1px solid #DADCE0';
-    const sh = active ? '0 4px 8px 3px rgba(26,115,232,.3)' : '0 1px 2px 0 rgba(60,64,67,.3)';
+function mkIcon(emoji, active, isNext) {
+    const s = active ? 56 : 42;
+    let addClass = active ? ' active-node' : '';
+    if (isNext) addClass += ' next-node';
+    
     return L.divIcon({
         className: '',
-        html: `<div class="md-marker-wrap" style="background:${bg};border:${bdr};box-shadow:${sh};font-size:${active?24:18}px;">${emoji}</div>`,
+        html: `<div class="md-marker-wrap${addClass}" style="font-size:${active?28:20}px;">${emoji}</div>`,
         iconSize: [s, s],
         iconAnchor: [s/2, s/2]
     });
 }
 
-// Create markers for all nodes
+// Create markers
 const markers = {};
 Object.values(NODES).forEach(w => {
   const m = L.marker(w.latlng, { icon: mkIcon(w.emoji, false, false) })
     .addTo(map)
-    .bindTooltip(w.title, { direction: 'top' });
+    .bindTooltip(`<b>${w.title}</b>`, { direction: 'top', offset: [0, -10] });
+    
   m.on('click', () => {
     const curNode = NODES[history[history.length-1]];
     if (curNode.next.some(n => n.key === w.key) || w.key === history[history.length-1]) {
@@ -797,12 +925,15 @@ Object.values(NODES).forEach(w => {
   markers[w.key] = m;
 });
 
+
 // Highlight active path line
 function highlightLine(fromKey, toKey) {
   const k1 = fromKey+'_'+toKey;
   const k2 = toKey+'_'+fromKey;
   const line = lineObjs[k1] || lineObjs[k2];
-  if (line) line.setStyle({ color: '#1A73E8', weight: 4, opacity: 1, dashArray: 'none' });
+  if (line) {
+    line.setStyle({ color: '#3B82F6', weight: 6, opacity: 1, dashArray: 'none' });
+  }
 }
 
 // ══════════════════════════════════════════════════
@@ -815,10 +946,10 @@ Object.values(NODES).forEach((w) => {
     d.id = 'sl_'+w.key;
 
     const tags = w.skills ? w.skills.map(s =>
-        `<span class="stag" style="color:${s.c};background:${s.b};"><span class="material-symbols-outlined" style="font-size:14px;">check_circle</span>${s.t}</span>`
+        `<span class="stag" style="color:${s.c};background:${s.b};"><span class="material-symbols-rounded" style="font-size:18px;">star</span> ${s.t}</span>`
     ).join('') : '';
 
-    const locHtml = w.loc ? `<div class="loc-tag"><span class="material-symbols-outlined" style="font-size:16px;">location_on</span>${w.loc}</div>` : '';
+    const locHtml = w.loc ? `<div class="loc-tag"><span class="material-symbols-rounded" style="font-size:18px; color:var(--primary);">location_on</span> ${w.loc}</div>` : '';
     const skillsHtml = w.skills ? `<div class="skills">${tags}</div>` : '';
     d.innerHTML = `
       <div class="char-wrap">
@@ -831,19 +962,44 @@ Object.values(NODES).forEach((w) => {
       <p>${w.desc}</p>
       ${skillsHtml}
       <div class="fc-strip">
-        <span class="material-symbols-outlined fc-strip-icon">account_balance</span>
+        <span class="material-symbols-rounded fc-strip-icon">account_balance</span>
         <div class="fc-strip-text">${w.fc}</div>
       </div>
-      ${w.next.length === 0 ? '<div style="margin-top:12px"><span class="finish-badge"><span class="material-symbols-outlined">emoji_events</span> Финиш!</span></div>' : ''}
+      ${w.next.length === 0 ? '<div style="margin-top:16px"><span class="finish-badge"><span class="material-symbols-rounded">emoji_events</span> ПУТЬ ПРОЙДЕН!</span></div>' : ''}
     `;
     sw.appendChild(d);
 });
 
 // ══════════════════════════════════════════════════
-//  MAP CHOICE POPUP
+//  MAP CHOICE POPUP & HINTS
 // ══════════════════════════════════════════════════
 const mapPopup = document.getElementById('map-popup');
 const mapPopupInner = document.getElementById('map-popup-inner');
+const hintEl = document.getElementById('hint');
+const hintText = document.getElementById('hint-text');
+
+function updateHintState(key) {
+    const node = NODES[key];
+    
+    // Clear previous next-node pulses
+    Object.values(markers).forEach(m => {
+        const iconDiv = m.getElement()?.querySelector('.md-marker-wrap');
+        if (iconDiv) iconDiv.classList.remove('next-node');
+    });
+
+    if (node.next.length > 0) {
+        hintEl.classList.remove('hide');
+        hintText.innerHTML = "Отлично! Теперь выберите следующий шаг на карте.";
+        
+        // Add pulse to available next options
+        node.next.forEach(nx => {
+            markers[nx.key].setIcon(mkIcon(NODES[nx.key].emoji, false, true));
+        });
+        
+    } else {
+        hintEl.classList.add('hide');
+    }
+}
 
 function showMapPopup(key) {
   const node = NODES[key];
@@ -854,10 +1010,15 @@ function showMapPopup(key) {
     return;
   }
 
+  const title = document.createElement('div');
+  title.className = 'popup-title';
+  title.innerHTML = 'КУДА ДАЛЬШЕ?';
+  mapPopupInner.appendChild(title);
+
   node.next.forEach(nx => {
     const btn = document.createElement('button');
     btn.className = 'map-choice-btn';
-    btn.innerHTML = `<span>${nx.label}</span><span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>`;
+    btn.innerHTML = `<span>${nx.label}</span><span class="material-symbols-rounded" style="font-size:24px;">arrow_circle_right</span>`;
     btn.onclick = () => goTo(nx.key);
     mapPopupInner.appendChild(btn);
   });
@@ -866,10 +1027,13 @@ function showMapPopup(key) {
   mapPopup.style.left = pt.x + 'px';
   mapPopup.style.top = pt.y + 'px';
   mapPopup.classList.add('visible');
+  
+  updateHintState(key);
 }
 
 function hideMapPopup() {
   mapPopup.classList.remove('visible');
+  hintEl.classList.add('hide');
 }
 
 map.on('move zoom', () => {
@@ -923,7 +1087,7 @@ function goTo(key) {
     prevSlide.style.visibility = '';
   }, 400);
 
-  markers[prevKey].setIcon(mkIcon(NODES[prevKey].emoji, false, true));
+  markers[prevKey].setIcon(mkIcon(NODES[prevKey].emoji, false, false));
   markers[key].setIcon(mkIcon(NODES[key].emoji, true, false));
 
   highlightLine(prevKey, key);
@@ -964,12 +1128,15 @@ function goBackTo(idx) {
     prevSlide.style.visibility = '';
   }, 400);
 
+  // Clear future path styles
   for (let k = idx+1; k < history.length; k++) {
     markers[history[k]].setIcon(mkIcon(NODES[history[k]].emoji, false, false));
     const a = history[k-1], b = history[k];
     const lk1 = a+'_'+b, lk2 = b+'_'+a;
     const line = lineObjs[lk1] || lineObjs[lk2];
-    if (line) line.setStyle({ color: '#DADCE0', weight: 3, opacity: 0.8, dashArray: '6,6' });
+    if (line) {
+      line.setStyle({ color: '#CBD5E1', weight: 4, opacity: 0.8, dashArray: '8,8' });
+    }
   }
   markers[key].setIcon(mkIcon(NODES[key].emoji, true, false));
 
@@ -1012,10 +1179,12 @@ updateDots();
 markers['rd'].setIcon(mkIcon(NODES['rd'].emoji, true, false));
 setTimeout(() => showMapPopup('rd'), 500);
 
-// Fade hint
-const hint = document.getElementById('hint');
-setTimeout(() => { hint.style.opacity='0'; }, 5000);
-document.addEventListener('click', () => { hint.style.opacity='0'; }, {once:true});
+// Close hint on first interaction
+document.addEventListener('click', () => { 
+    if(history.length === 1 && !mapPopup.classList.contains('visible')) {
+        hintEl.classList.add('hide'); 
+    }
+}, {once:true});
 </script>
 </body>
 </html>
