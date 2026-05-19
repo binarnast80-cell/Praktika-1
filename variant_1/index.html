@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Путь Айдоса — Финансовый Центр</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="header">
+    <div>
+        <div id="h-title">🗺️ Путь Айдоса</div>
+        <div class="sub">Астана · Путь к Финансовому Центру</div>
+    </div>
+    <div id="dots"></div>
+</div>
+
+<div id="main">
+    <div id="map-wrap">
+        <div id="map"></div>
+        <div id="map-popup"><div id="map-popup-inner"></div></div>
+        <div id="hint">Кликните на любую точку — Айдос проложит туда путь</div>
+    </div>
+    <div id="panel">
+        <div id="slides-wrap"></div>
+        <div id="nav">
+            <button class="nav-btn" id="bp">◀</button>
+            <div id="prog">
+                <span><span id="cn">1</span>/<span id="tn">?</span></span>
+                <small>ШАГ ПУТИ</small>
+            </div>
+            <button class="nav-btn" id="bn">▶</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

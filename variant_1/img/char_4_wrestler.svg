@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <!-- Head -->
+  <circle cx="100" cy="60" r="26" fill="#FCE9D6" stroke="#1A1A1A" stroke-width="2.5"/>
+  <!-- Hair (short, tough) -->
+  <path d="M 78 50 Q 78 36 100 36 Q 122 36 122 50 L 122 54 L 78 54 Z" fill="#1A1A1A"/>
+  <!-- Determined eyes -->
+  <path d="M 86 62 L 94 62" stroke="#1A1A1A" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M 106 62 L 114 62" stroke="#1A1A1A" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Serious mouth -->
+  <path d="M 94 76 L 106 76" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round"/>
+  <!-- Wrestling jacket (chapan) — broad shoulders -->
+  <path d="M 55 100 L 65 92 L 100 88 L 135 92 L 145 100 L 145 160 L 55 160 Z" fill="#FFFFFF" stroke="#1A1A1A" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- Jacket overlap -->
+  <path d="M 100 88 L 100 160" stroke="#1A1A1A" stroke-width="2.5"/>
+  <path d="M 100 88 L 115 100 L 100 105" stroke="#1A1A1A" stroke-width="2.5" stroke-linejoin="round" fill="#F4F4F0"/>
+  <!-- Red wrestling belt -->
+  <rect x="55" y="130" width="90" height="14" fill="#DC2626" stroke="#1A1A1A" stroke-width="2.5"/>
+  <!-- Belt knot -->
+  <rect x="93" y="128" width="14" height="18" fill="#A32D2D" stroke="#1A1A1A" stroke-width="2"/>
+  <!-- Arms (flexed, by sides) -->
+  <rect x="46" y="100" width="14" height="42" rx="6" fill="#FCE9D6" stroke="#1A1A1A" stroke-width="2.5"/>
+  <rect x="140" y="100" width="14" height="42" rx="6" fill="#FCE9D6" stroke="#1A1A1A" stroke-width="2.5"/>
+</svg>

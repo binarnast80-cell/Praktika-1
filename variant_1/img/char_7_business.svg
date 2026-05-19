@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <!-- Head -->
+  <circle cx="100" cy="60" r="26" fill="#FCE9D6" stroke="#1A1A1A" stroke-width="2.5"/>
+  <!-- Hair (groomed, side part) -->
+  <path d="M 76 50 Q 76 36 100 36 Q 124 36 124 50 L 124 54 Q 115 48 105 52 L 95 50 Q 85 48 76 54 Z" fill="#1A1A1A"/>
+  <!-- Eyes -->
+  <circle cx="91" cy="62" r="2.5" fill="#1A1A1A"/>
+  <circle cx="109" cy="62" r="2.5" fill="#1A1A1A"/>
+  <!-- Confident smile -->
+  <path d="M 92 75 Q 100 80 108 75" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round"/>
+  <!-- Suit jacket -->
+  <path d="M 58 100 L 70 92 L 100 96 L 130 92 L 142 100 L 142 162 L 58 162 Z" fill="#1A2E5A" stroke="#1A1A1A" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- Shirt collar / V opening -->
+  <path d="M 85 96 L 100 120 L 115 96" fill="#FFFFFF" stroke="#1A1A1A" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- Tie (blue accent) -->
+  <path d="M 96 100 L 100 110 L 104 100 L 108 150 L 92 150 Z" fill="#2563EB" stroke="#1A1A1A" stroke-width="2" stroke-linejoin="round"/>
+  <!-- Lapels -->
+  <path d="M 70 92 L 85 96 L 88 130 L 75 130 Z" fill="#1A2E5A" stroke="#1A1A1A" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M 130 92 L 115 96 L 112 130 L 125 130 Z" fill="#1A2E5A" stroke="#1A1A1A" stroke-width="2" stroke-linejoin="round"/>
+  <!-- Right arm holding briefcase -->
+  <rect x="128" y="100" width="12" height="40" rx="5" fill="#1A2E5A" stroke="#1A1A1A" stroke-width="2.5"/>
+  <!-- Briefcase -->
+  <rect x="118" y="140" width="36" height="26" rx="2" fill="#3A1F00" stroke="#1A1A1A" stroke-width="2.5"/>
+  <!-- Briefcase handle -->
+  <path d="M 130 140 L 130 134 Q 130 130 134 130 L 138 130 Q 142 130 142 134 L 142 140" stroke="#1A1A1A" stroke-width="2" fill="none"/>
+  <!-- Briefcase clasp -->
+  <rect x="133" y="150" width="6" height="3" fill="#FFD21F" stroke="#1A1A1A" stroke-width="1"/>
+  <!-- Left arm -->
+  <rect x="60" y="100" width="12" height="42" rx="5" fill="#1A2E5A" stroke="#1A1A1A" stroke-width="2.5"/>
+</svg>
