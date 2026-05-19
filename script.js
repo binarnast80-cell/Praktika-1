@@ -175,15 +175,6 @@ function goForwardStep() {
   if (key) goTo(key);
 }
 
-// Обработка ошибок загрузки изображений персонажей
-document.querySelectorAll('.char-img').forEach(img => {
-  img.addEventListener('error', function() {
-    this.style.display = 'none';
-    const fallback = this.parentElement.querySelector('.char-fallback');
-    if (fallback) fallback.style.display = 'flex';
-  });
-});
-
 // ══════════════════════════════════════════════════
 //  MAP SETUP
 // ══════════════════════════════════════════════════
@@ -225,14 +216,13 @@ CONNECTIONS.forEach(([a,b]) => {
 });
 
 function mkIcon(emoji, active, visited) {
-    const s = active ? 48 : 38;
     const state = active ? 'active' : visited ? 'visited' : 'default';
-    const fs = active ? 22 : 16;
+    const size = active ? 'lg' : 'md';
     return L.divIcon({
         className: '',
-        html: `<div class="map-marker map-marker--${state}" style="width:${s}px;height:${s}px;font-size:${fs}px;">${emoji}</div>`,
-        iconSize: [s, s],
-        iconAnchor: [s/2, s/2]
+        html: `<div class="map-marker map-marker--${state} map-marker--${size}">${emoji}</div>`,
+        iconSize: [active ? 48 : 38, active ? 48 : 38],
+        iconAnchor: [active ? 24 : 19, active ? 24 : 19]
     });
 }
 
@@ -262,39 +252,99 @@ function highlightLine(fromKey, toKey) {
 // ══════════════════════════════════════════════════
 //  BUILD SLIDES
 // ══════════════════════════════════════════════════
+function createSkillTag(skill) {
+  const span = document.createElement('span');
+  span.className = 'stag';
+  span.textContent = skill.t;
+  span.style.setProperty('--stag-color', skill.c);
+  span.style.setProperty('--stag-bg', skill.b);
+  return span;
+}
+
+function buildSlide(node) {
+  const slide = document.createElement('div');
+  slide.className = 'slide' + (node.key === 'rd' ? ' active' : '');
+  slide.id = 'sl_' + node.key;
+
+  const charWrap = document.createElement('div');
+  charWrap.className = 'char-wrap';
+  const img = document.createElement('img');
+  img.src = node.charImg;
+  img.alt = 'Айдос';
+  img.className = 'char-img';
+  img.addEventListener('error', () => charWrap.setAttribute('data-error', 'true'));
+  const fallback = document.createElement('div');
+  fallback.className = 'char-fallback';
+  fallback.textContent = node.emoji;
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.textContent = node.bubble;
+  charWrap.append(img, fallback, bubble);
+
+  const ageBadge = document.createElement('div');
+  ageBadge.className = 'age-badge';
+  ageBadge.textContent = node.age;
+  const title = document.createElement('h2');
+  title.textContent = node.title;
+  slide.append(charWrap, ageBadge, title);
+
+  if (node.loc) {
+    const loc = document.createElement('div');
+    loc.className = 'loc-tag';
+    loc.textContent = '📍 ' + node.loc;
+    slide.appendChild(loc);
+  }
+
+  const desc = document.createElement('p');
+  desc.textContent = node.desc;
+  slide.appendChild(desc);
+
+  if (node.skills && node.skills.length) {
+    const skills = document.createElement('div');
+    skills.className = 'skills';
+    node.skills.forEach(s => skills.appendChild(createSkillTag(s)));
+    slide.appendChild(skills);
+  }
+
+  const fcStrip = document.createElement('div');
+  fcStrip.className = 'fc-strip';
+  const fcIcon = document.createElement('div');
+  fcIcon.className = 'fc-strip-icon';
+  fcIcon.textContent = '🏦';
+  const fcText = document.createElement('div');
+  fcText.className = 'fc-strip-text';
+  fcText.textContent = node.fc;
+  fcStrip.append(fcIcon, fcText);
+  slide.appendChild(fcStrip);
+
+  if (node.next.length === 0) {
+    const finishWrap = document.createElement('div');
+    finishWrap.className = 'finish-container';
+    const finish = document.createElement('span');
+    finish.className = 'finish-badge';
+    finish.textContent = '🏆 ФИНИШ!';
+    finishWrap.appendChild(finish);
+    slide.appendChild(finishWrap);
+  }
+
+  return slide;
+}
+
+function runSlideTransition(prevSlide, nextSlide, direction) {
+  const enterClass = direction === 'fwd' ? 's-enter-fwd' : 's-enter-bwd';
+  const exitClass = direction === 'fwd' ? 's-exit-fwd' : 's-exit-bwd';
+  nextSlide.classList.add('no-transition', enterClass);
+  void nextSlide.offsetWidth;
+  prevSlide.classList.remove('active');
+  prevSlide.classList.add(exitClass);
+  nextSlide.classList.remove('no-transition', enterClass);
+  nextSlide.classList.add('active');
+  setTimeout(() => prevSlide.classList.remove(exitClass), 380);
+}
+
 const sw = document.getElementById('slides-wrap');
-Object.values(NODES).forEach((w) => {
-    const d = document.createElement('div');
-    d.className = 'slide' + (w.key==='rd'?' active':'');
-    d.id = 'sl_'+w.key;
+Object.values(NODES).forEach(w => sw.appendChild(buildSlide(w)));
 
-    const tags = w.skills ? w.skills.map(s =>
-        `<span class="stag" style="color:${s.c};background:${s.b};border-color:${s.c}">${s.t}</span>`
-    ).join('') : '';
-
-    const locHtml = w.loc ? `<div class="loc-tag">📍 ${w.loc}</div>` : '';
-    const skillsHtml = w.skills ? `<div class="skills">${tags}</div>` : '';
-    d.innerHTML = `
-      <div class="char-wrap">
-        <img src="${w.charImg}" alt="Айдос" class="char-img" onerror="this.parentElement.setAttribute('data-error', 'true'); this.style.display='none'">
-        <div class="char-fallback">${w.emoji}</div>
-        <div class="bubble">${w.bubble}</div>
-      </div>
-      <div class="age-badge">${w.age}</div>
-      <h2>${w.title}</h2>
-      ${locHtml}
-      <p>${w.desc}</p>
-      ${skillsHtml}
-      <div class="fc-strip">
-        <div class="fc-strip-icon">🏦</div>
-        <div class="fc-strip-text">${w.fc}</div>
-      </div>
-      ${w.next.length === 0 ? '<div class="finish-container"><span class="finish-badge">🏆 ФИНИШ!</span></div>' : ''}
-    `;
-    sw.appendChild(d);
-});
-
-// ══════════════════════════════════════════════════
 //  MAP CHOICE POPUP
 // ══════════════════════════════════════════════════
 const mapPopup = document.getElementById('map-popup');
@@ -370,9 +420,9 @@ panelToggle.addEventListener('click', () => setPanelCollapsed(!panelCollapsed));
 
 function positionOverlayAtMarker(el, latlng, offsetY) {
   const pt = map.latLngToContainerPoint(latlng);
-  el.style.left = pt.x + 'px';
-  el.style.top = pt.y + 'px';
-  el.style.setProperty('--compact-offset', offsetY + 'px');
+  el.style.setProperty('--overlay-x', pt.x + 'px');
+  el.style.setProperty('--overlay-y', pt.y + 'px');
+  if (offsetY != null) el.style.setProperty('--compact-offset', offsetY + 'px');
 }
 
 function getCompactZoomMode(node) {
@@ -429,7 +479,11 @@ function showCompactStep(key) {
   compactPinEmoji.textContent = node.emoji;
   compactTitle.textContent = node.title;
   compactDesc.textContent = node.desc;
-  compactFc.innerHTML = '<span class="compact-fc-icon">🏦</span>' + node.fc;
+  compactFc.replaceChildren();
+  const fcIconEl = document.createElement('span');
+  fcIconEl.className = 'compact-fc-icon';
+  fcIconEl.textContent = '🏦';
+  compactFc.append(fcIconEl, document.createTextNode(node.fc));
 
   compactChoices.innerHTML = '';
   if (ordered.length > 1) {
@@ -505,20 +559,7 @@ function goTo(key) {
   const prevSlide = document.getElementById('sl_'+prevKey);
   const nextSlide = document.getElementById('sl_'+key);
 
-  nextSlide.style.transition = 'none';
-  nextSlide.classList.remove('active','s-exit-fwd','s-exit-bwd','s-enter-fwd','s-enter-bwd');
-  nextSlide.classList.add('s-enter-fwd');
-  nextSlide.style.visibility = 'visible';
-  void nextSlide.offsetWidth;
-  prevSlide.classList.remove('active');
-  prevSlide.classList.add('s-exit-fwd');
-  nextSlide.style.transition = '';
-  nextSlide.classList.remove('s-enter-fwd');
-  nextSlide.classList.add('active');
-  setTimeout(() => {
-    prevSlide.classList.remove('s-exit-fwd','s-exit-bwd');
-    prevSlide.style.visibility = '';
-  }, 380);
+  runSlideTransition(prevSlide, nextSlide, 'fwd');
 
   markers[prevKey].setIcon(mkIcon(NODES[prevKey].emoji, false, true));
   markers[key].setIcon(mkIcon(NODES[key].emoji, true, false));
@@ -547,20 +588,7 @@ function goBackTo(idx) {
   const prevSlide = document.getElementById('sl_'+prevKey);
   const nextSlide = document.getElementById('sl_'+key);
 
-  nextSlide.style.transition = 'none';
-  nextSlide.classList.remove('active','s-exit-fwd','s-exit-bwd','s-enter-fwd','s-enter-bwd');
-  nextSlide.classList.add('s-enter-bwd');
-  nextSlide.style.visibility = 'visible';
-  void nextSlide.offsetWidth;
-  prevSlide.classList.remove('active');
-  prevSlide.classList.add('s-exit-bwd');
-  nextSlide.style.transition = '';
-  nextSlide.classList.remove('s-enter-bwd');
-  nextSlide.classList.add('active');
-  setTimeout(() => {
-    prevSlide.classList.remove('s-exit-fwd','s-exit-bwd');
-    prevSlide.style.visibility = '';
-  }, 380);
+  runSlideTransition(prevSlide, nextSlide, 'bwd');
 
   for (let k = idx+1; k < history.length; k++) {
     markers[history[k]].setIcon(mkIcon(NODES[history[k]].emoji, false, false));
@@ -615,5 +643,5 @@ setTimeout(() => refreshMapOverlays(), 500);
 
 // Fade hint
 const hint = document.getElementById('hint');
-setTimeout(() => { hint.style.opacity='0'; }, 5000);
-document.addEventListener('click', () => { hint.style.opacity='0'; }, {once:true});
+setTimeout(() => { hint.classList.add('hint--hidden'); }, 5000);
+document.addEventListener('click', () => { hint.classList.add('hint--hidden'); }, {once:true});
