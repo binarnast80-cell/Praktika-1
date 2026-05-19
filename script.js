@@ -150,6 +150,31 @@ const NODES = {
   }
 };
 
+// Порядок веток при «Вперёд»: кружки → основной путь → общежитие → учёба → работа
+const BRANCH_PRIORITY = {
+  kr1: 1, kr2: 1, kr3: 1,
+  kg: 2, sc: 3, co: 4,
+  ob1: 5, ob2: 5,
+  un: 6,
+  fc: 7
+};
+
+function getOrderedNext(node) {
+  return [...node.next].sort(
+    (a, b) => (BRANCH_PRIORITY[a.key] ?? 99) - (BRANCH_PRIORITY[b.key] ?? 99)
+  );
+}
+
+function getForwardNextKey() {
+  const ordered = getOrderedNext(NODES[history[history.length - 1]]);
+  return ordered.length ? ordered[0].key : null;
+}
+
+function goForwardStep() {
+  const key = getForwardNextKey();
+  if (key) goTo(key);
+}
+
 // Обработка ошибок загрузки изображений персонажей
 document.querySelectorAll('.char-img').forEach(img => {
   img.addEventListener('error', function() {
@@ -276,6 +301,8 @@ const mapPopup = document.getElementById('map-popup');
 const mapPopupInner = document.getElementById('map-popup-inner');
 
 function showMapPopup(key) {
+  if (panelCollapsed) return;
+
   const node = NODES[key];
   mapPopupInner.innerHTML = '';
 
@@ -284,7 +311,7 @@ function showMapPopup(key) {
     return;
   }
 
-  node.next.forEach(nx => {
+  getOrderedNext(node).forEach(nx => {
     const btn = document.createElement('button');
     btn.className = 'map-choice-btn';
     btn.textContent = nx.label;
@@ -292,9 +319,7 @@ function showMapPopup(key) {
     mapPopupInner.appendChild(btn);
   });
 
-  const pt = map.latLngToContainerPoint(node.latlng);
-  mapPopup.style.left = pt.x + 'px';
-  mapPopup.style.top = pt.y + 'px';
+  positionOverlayAtMarker(mapPopup, node.latlng, 34);
   mapPopup.classList.add('visible');
 }
 
@@ -302,16 +327,158 @@ function hideMapPopup() {
   mapPopup.classList.remove('visible');
 }
 
-map.on('move zoom', () => {
-  const curKey = history[history.length - 1];
-  const node = NODES[curKey];
-  if (node.next.length > 0 && mapPopup.classList.contains('visible')) {
-    const pt = map.latLngToContainerPoint(node.latlng);
-    mapPopup.style.left = pt.x + 'px';
-    mapPopup.style.top = pt.y + 'px';
-  }
+map.on('move zoom zoomend', () => {
+  repositionMapOverlays();
 });
 
+// ══════════════════════════════════════════════════
+//  PANEL COLLAPSE + COMPACT STEP BUBBLE
+// ══════════════════════════════════════════════════
+const panel = document.getElementById('panel');
+const panelToggle = document.getElementById('panel-toggle');
+const compactStep = document.getElementById('compact-step');
+const compactPin = document.getElementById('compact-pin');
+const compactPinEmoji = document.getElementById('compact-pin-emoji');
+const compactExpanded = document.getElementById('compact-step-expanded');
+const compactAge = document.getElementById('compact-age');
+const compactEmoji = document.getElementById('compact-emoji');
+const compactTitle = document.getElementById('compact-title');
+const compactDesc = document.getElementById('compact-desc');
+const compactFc = document.getElementById('compact-fc');
+const compactChoices = document.getElementById('compact-choices');
+const cbp = document.getElementById('cbp');
+const cbn = document.getElementById('cbn');
+const ccn = document.getElementById('ccn');
+
+let panelCollapsed = false;
+
+function setPanelCollapsed(collapsed) {
+  panelCollapsed = collapsed;
+  document.body.classList.toggle('panel-collapsed', collapsed);
+  panelToggle.setAttribute('aria-expanded', String(!collapsed));
+  panelToggle.setAttribute(
+    'aria-label',
+    collapsed ? 'Развернуть панель пути' : 'Свернуть панель пути'
+  );
+  panelToggle.setAttribute('title', collapsed ? 'Развернуть панель' : 'Свернуть панель');
+  panelToggle.textContent = collapsed ? '⟨' : '⟩';
+  setTimeout(() => map.invalidateSize(), 360);
+  refreshMapOverlays();
+}
+
+panelToggle.addEventListener('click', () => setPanelCollapsed(!panelCollapsed));
+
+function positionOverlayAtMarker(el, latlng, offsetY) {
+  const pt = map.latLngToContainerPoint(latlng);
+  el.style.left = pt.x + 'px';
+  el.style.top = pt.y + 'px';
+  el.style.setProperty('--compact-offset', offsetY + 'px');
+}
+
+function getCompactZoomMode(node) {
+  const z = map.getZoom();
+  const target = node.zoom ?? 14;
+  if (z < target - 2) return 'pin';
+  if (z < target - 0.5) return 'medium';
+  return 'full';
+}
+
+function applyCompactZoomMode(key) {
+  const node = NODES[key];
+  const mode = getCompactZoomMode(node);
+  const z = map.getZoom();
+  const target = node.zoom ?? 14;
+
+  compactStep.classList.remove('compact-step--pin', 'compact-step--medium', 'compact-step--full');
+  compactStep.classList.add('compact-step--' + mode);
+
+  const t = Math.max(0, Math.min(1, (z - (target - 3)) / 3));
+  let scale = 1;
+  if (mode === 'medium') scale = 0.72 + t * 0.18;
+  else if (mode === 'full') scale = 0.88 + t * 0.12;
+
+  compactExpanded.style.setProperty('--compact-scale', String(scale));
+  compactPin.title = mode === 'pin'
+    ? `${node.title} — нажмите, чтобы приблизить`
+    : node.title;
+}
+
+function repositionMapOverlays() {
+  const curKey = history[history.length - 1];
+  const node = NODES[curKey];
+  if (panelCollapsed) {
+    applyCompactZoomMode(curKey);
+    const mode = getCompactZoomMode(node);
+    const offsetY = mode === 'pin' ? 28 : 52;
+    positionOverlayAtMarker(compactStep, node.latlng, offsetY);
+  } else if (node.next.length > 0 && mapPopup.classList.contains('visible')) {
+    positionOverlayAtMarker(mapPopup, node.latlng, 34);
+  }
+}
+
+function hideCompactStep() {
+  compactStep.classList.remove('visible');
+}
+
+function showCompactStep(key) {
+  const node = NODES[key];
+  const ordered = getOrderedNext(node);
+
+  compactAge.textContent = node.age;
+  compactEmoji.textContent = node.emoji;
+  compactPinEmoji.textContent = node.emoji;
+  compactTitle.textContent = node.title;
+  compactDesc.textContent = node.desc;
+  compactFc.innerHTML = '<span class="compact-fc-icon">🏦</span>' + node.fc;
+
+  compactChoices.innerHTML = '';
+  if (ordered.length > 1) {
+    ordered.forEach(nx => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'compact-choice-btn';
+      btn.textContent = nx.label;
+      btn.onclick = () => goTo(nx.key);
+      compactChoices.appendChild(btn);
+    });
+    compactChoices.hidden = false;
+  } else {
+    compactChoices.hidden = true;
+  }
+
+  if (node.next.length === 0) {
+    compactStep.classList.add('compact-step--finish');
+  } else {
+    compactStep.classList.remove('compact-step--finish');
+  }
+
+  applyCompactZoomMode(key);
+  const mode = getCompactZoomMode(node);
+  positionOverlayAtMarker(compactStep, node.latlng, mode === 'pin' ? 28 : 52);
+  compactStep.classList.add('visible');
+}
+
+compactPin.addEventListener('click', () => {
+  const key = history[history.length - 1];
+  const node = NODES[key];
+  map.flyTo(node.latlng, node.zoom, { duration: 0.85, easeLinearity: 0.4 });
+});
+
+function refreshMapOverlays() {
+  const key = history[history.length - 1];
+  if (panelCollapsed) {
+    hideMapPopup();
+    showCompactStep(key);
+  } else {
+    hideCompactStep();
+    const node = NODES[key];
+    if (node.next.length > 0) {
+      showMapPopup(key);
+    } else {
+      hideMapPopup();
+    }
+  }
+}
 
 let history = ['rd'];
 const visited = new Set(['rd']);
@@ -362,13 +529,14 @@ function goTo(key) {
   visited.add(key);
 
   document.getElementById('cn').textContent = history.length;
+  ccn.textContent = history.length;
   updateNavBtns();
   updateDots();
 
   map.flyTo(NODES[key].latlng, NODES[key].zoom, { duration: 1.2, easeLinearity: 0.4 });
 
   hideMapPopup();
-  setTimeout(() => showMapPopup(key), 1300);
+  setTimeout(() => refreshMapOverlays(), 1300);
 }
 
 function goBackTo(idx) {
@@ -405,42 +573,45 @@ function goBackTo(idx) {
 
   history = history.slice(0, idx+1);
   document.getElementById('cn').textContent = history.length;
+  ccn.textContent = history.length;
   updateNavBtns();
   updateDots();
   map.flyTo(NODES[key].latlng, NODES[key].zoom, { duration: 1.2, easeLinearity: 0.4 });
   hideMapPopup();
-  setTimeout(() => showMapPopup(key), 1300);
+  setTimeout(() => refreshMapOverlays(), 1300);
 }
 
 bp.addEventListener('click', () => { if (history.length > 1) goBackTo(history.length-2); });
+cbp.addEventListener('click', () => { if (history.length > 1) goBackTo(history.length-2); });
 
 function updateNavBtns() {
-  bp.disabled = history.length <= 1;
-  const curNode = NODES[history[history.length-1]];
-  bn.disabled = curNode.next.length === 0;
+  const canBack = history.length > 1;
+  const canForward = !!getForwardNextKey();
+
+  bp.disabled = !canBack;
+  cbp.disabled = !canBack;
+  bn.disabled = !canForward;
+  cbn.disabled = !canForward;
 }
 
-bn.addEventListener('click', () => {
-  const curNode = NODES[history[history.length-1]];
-  if (curNode.next.length > 0) goTo(curNode.next[0].key);
-});
+bn.addEventListener('click', goForwardStep);
+cbn.addEventListener('click', goForwardStep);
 
 document.addEventListener('keydown', e => {
   if (e.key==='ArrowLeft' && history.length > 1) goBackTo(history.length-2);
-  if (e.key==='ArrowRight') {
-    const curNode = NODES[history[history.length-1]];
-    if (curNode.next.length === 1) goTo(curNode.next[0].key);
-  }
+  if (e.key==='ArrowRight') goForwardStep();
 });
 
 document.getElementById('tn').textContent = '?';
 document.getElementById('cn').textContent = '1';
+ccn.textContent = '1';
 bp.disabled = true;
+cbp.disabled = true;
 updateNavBtns();
 
 updateDots();
 markers['rd'].setIcon(mkIcon(NODES['rd'].emoji, true, false));
-setTimeout(() => showMapPopup('rd'), 500);
+setTimeout(() => refreshMapOverlays(), 500);
 
 // Fade hint
 const hint = document.getElementById('hint');

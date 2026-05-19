@@ -172,6 +172,21 @@ body {
     box-shadow: -12px 0 40px rgba(7, 13, 24, 0.12);
     z-index: 500;
     border-left: 1px solid rgba(255, 255, 255, 0.8);
+    transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.32s ease, width 0.38s ease;
+}
+
+body.panel-collapsed #panel {
+    width: 0;
+    min-width: 0;
+    opacity: 0;
+    transform: translateX(100%);
+    pointer-events: none;
+    border: none;
+    box-shadow: none;
+}
+
+body.panel-collapsed #map-wrap::after {
+    display: none;
 }
 
 #panel::before {
@@ -411,6 +426,282 @@ body {
     border: 9px solid transparent;
     border-top-color: rgba(255, 255, 255, 0.98);
     filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.06));
+}
+
+/* ── PANEL TOGGLE ── */
+.panel-toggle {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 720;
+    width: 36px;
+    height: 72px;
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-radius: 12px 0 0 12px;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(10px);
+    color: var(--ink);
+    font-size: 1.15rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: -6px 0 20px rgba(7, 13, 24, 0.12);
+    transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, right 0.38s ease;
+}
+
+.panel-toggle:hover {
+    background: #fff;
+    color: var(--teal);
+    box-shadow: -8px 0 24px rgba(7, 13, 24, 0.16);
+}
+
+body.panel-collapsed .panel-toggle {
+    right: 14px;
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+}
+
+/* ── COMPACT STEP (свёрнутая панель) ── */
+#compact-step {
+    position: absolute;
+    z-index: 650;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    pointer-events: none;
+    transform: translate(-50%, calc(-100% - var(--compact-offset, 52px)));
+    max-width: min(94vw, 560px);
+}
+
+#compact-step.visible {
+    display: flex;
+    pointer-events: auto;
+}
+
+.compact-pin {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border: 2.5px solid #fff;
+    border-radius: 16px;
+    background: linear-gradient(145deg, #ffe9a8, var(--gold));
+    box-shadow: 0 10px 28px var(--gold-glow), 0 8px 24px rgba(7, 13, 24, 0.18);
+    cursor: pointer;
+    font-size: 1.5rem;
+    line-height: 1;
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
+    flex-shrink: 0;
+}
+
+.compact-pin:hover {
+    transform: scale(1.1);
+    box-shadow: 0 12px 32px var(--gold-glow), 0 10px 28px rgba(7, 13, 24, 0.22);
+}
+
+.compact-pin:active {
+    transform: scale(1.04);
+}
+
+#compact-step.compact-step--pin {
+    transform: translate(-50%, calc(-100% - var(--compact-offset, 28px)));
+}
+
+#compact-step.compact-step--pin .compact-pin {
+    display: flex;
+}
+
+#compact-step.compact-step--pin .compact-step-expanded {
+    display: none;
+}
+
+.compact-step-expanded {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transform: scale(var(--compact-scale, 1));
+    transform-origin: center bottom;
+    transition: transform 0.25s ease;
+}
+
+#compact-step.compact-step--medium .compact-desc {
+    max-height: 3.2em;
+}
+
+#compact-step.compact-step--medium #compact-step-card {
+    max-width: 300px;
+    padding: 12px 14px 10px;
+}
+
+#compact-step.compact-step--medium .compact-title {
+    font-size: 0.88rem;
+}
+
+#compact-step.compact-step--full .compact-desc {
+    max-height: 5.5em;
+}
+
+#compact-step-card {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    max-width: 340px;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    border-radius: var(--radius);
+    box-shadow: 0 18px 48px rgba(7, 13, 24, 0.22);
+    padding: 14px 16px 12px;
+}
+
+#compact-step-card::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 10px solid transparent;
+    border-top-color: rgba(255, 255, 255, 0.98);
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.06));
+}
+
+.compact-step-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.compact-age {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #8a6b1a;
+    background: linear-gradient(135deg, #fdf6e3, #f5e6b8);
+    padding: 4px 10px;
+    border-radius: 999px;
+}
+
+.compact-emoji {
+    font-size: 1.35rem;
+    line-height: 1;
+}
+
+.compact-title {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.25;
+    margin-bottom: 6px;
+}
+
+.compact-desc {
+    font-size: 0.74rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    margin-bottom: 8px;
+    max-height: 4.5em;
+    overflow-y: auto;
+}
+
+.compact-fc {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    font-size: 0.68rem;
+    font-weight: 500;
+    color: #156b5f;
+    line-height: 1.45;
+    background: var(--teal-soft);
+    border: 1px solid rgba(31, 168, 150, 0.2);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    margin-bottom: 8px;
+}
+
+.compact-fc-icon {
+    flex-shrink: 0;
+}
+
+.compact-choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.compact-choices[hidden] {
+    display: none !important;
+}
+
+.compact-choice-btn {
+    flex: 1 1 auto;
+    min-width: 0;
+    background: linear-gradient(180deg, #fff 0%, #f4f8fc 100%);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 8px 10px;
+    cursor: pointer;
+    color: var(--ink);
+    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.compact-choice-btn:hover {
+    border-color: var(--gold);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.compact-prog {
+    display: block;
+    text-align: center;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+}
+
+.compact-nav-btn--side {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    color: var(--ink);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(7, 13, 24, 0.16);
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    align-self: center;
+}
+
+.compact-nav-btn--side:hover:not(:disabled) {
+    border-color: var(--gold);
+    transform: scale(1.06);
+    box-shadow: 0 10px 28px rgba(212, 168, 75, 0.25);
+}
+
+.compact-nav-btn--side:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    transform: none;
+}
+
+#compact-step.compact-step--finish #compact-step-card {
+    border-color: rgba(46, 196, 175, 0.4);
+    box-shadow: 0 18px 48px rgba(31, 168, 150, 0.2);
 }
 
 .map-choice-btn {
@@ -737,4 +1028,38 @@ body {
         font-size: 0.65rem;
         padding: 9px 14px;
     }
+
+    #compact-step.compact-step--pin {
+        transform: translate(-50%, calc(-100% - 32px));
+    }
+
+    #compact-step.visible:not(.compact-step--pin) .compact-step-expanded {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        width: min(92vw, 340px);
+    }
+
+    #compact-step-card {
+        max-width: none;
+    }
+
+    .compact-nav-btn--side {
+        width: 100%;
+        height: 42px;
+        border-radius: 12px;
+    }
+
+    #compact-step.visible:not(.compact-step--pin) .compact-step-expanded {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto;
+    }
+
+    #compact-step.visible:not(.compact-step--pin) #compact-step-card {
+        grid-column: 1 / -1;
+    }
+
+    #compact-step.visible:not(.compact-step--pin) #cbp { grid-column: 1; }
+    #compact-step.visible:not(.compact-step--pin) #cbn { grid-column: 2; }
 }

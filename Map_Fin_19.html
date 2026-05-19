@@ -23,6 +23,27 @@
     <div id="map-wrap">
         <div id="map"></div>
         <div id="map-popup"><div id="map-popup-inner"></div></div>
+        <div id="compact-step" aria-live="polite">
+            <button type="button" id="compact-pin" class="compact-pin" aria-label="Приблизить и открыть описание шага">
+                <span id="compact-pin-emoji"></span>
+            </button>
+            <div id="compact-step-expanded" class="compact-step-expanded">
+            <button type="button" class="compact-nav-btn compact-nav-btn--side" id="cbp" aria-label="Предыдущий шаг">◀</button>
+            <div id="compact-step-card">
+                <div class="compact-step-top">
+                    <span class="compact-age" id="compact-age"></span>
+                    <span class="compact-emoji" id="compact-emoji"></span>
+                </div>
+                <h3 class="compact-title" id="compact-title"></h3>
+                <p class="compact-desc" id="compact-desc"></p>
+                <div class="compact-fc" id="compact-fc"></div>
+                <div class="compact-choices" id="compact-choices"></div>
+                <span class="compact-prog"><span id="ccn">1</span> · шаг пути</span>
+            </div>
+            <button type="button" class="compact-nav-btn compact-nav-btn--side" id="cbn" aria-label="Следующий шаг">▶</button>
+            </div>
+        </div>
+        <button type="button" id="panel-toggle" class="panel-toggle" aria-label="Свернуть панель пути" aria-expanded="true" title="Свернуть панель">⟩</button>
         <div id="hint">Точка — следующий шаг · Карту можно двигать мышью и тачпадом</div>
     </div>
     <div id="panel">
