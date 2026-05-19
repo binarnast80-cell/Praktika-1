@@ -578,6 +578,67 @@ function goTo(key) {
 
   hideMapPopup();
   setTimeout(() => refreshMapOverlays(), 1300);
+  
+  // Trigger fireworks when reaching the end
+  if (key === 'fc') {
+    setTimeout(() => triggerFireworks(), 800);
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  FIREWORKS EFFECT
+// ══════════════════════════════════════════════════
+function triggerFireworks() {
+  // Create container if not exists
+  let container = document.getElementById('fireworks-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'fireworks-container';
+    container.className = 'fireworks-container';
+    document.body.appendChild(container);
+  }
+
+  const emojis = ['🎉', '🎊', '✨', '🌟', '⭐', '💫', '🏆', '🎈', '🎁', '🚀'];
+  const particleCount = 50;
+
+  for (let i = 0; i < particleCount; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'firework-particle ' + (Math.random() > 0.5 ? 'burst' : 'pop');
+    particle.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+
+    const angle = (i / particleCount) * Math.PI * 2;
+    const distance = 200 + Math.random() * 300;
+    const tx = Math.cos(angle) * distance;
+    const ty = -Math.sin(angle) * distance;
+
+    particle.style.setProperty('--tx', tx + 'px');
+    particle.style.setProperty('--ty', ty + 'px');
+    particle.style.setProperty('--distance', -(200 + Math.random() * 400) + 'px');
+    particle.style.animationDelay = Math.random() * 0.2 + 's';
+
+    particle.style.left = Math.random() * window.innerWidth + 'px';
+
+    container.appendChild(particle);
+
+    // Remove particle after animation completes
+    setTimeout(() => particle.remove(), 1500);
+  }
+
+  // Flash effect
+  const flash = document.createElement('div');
+  flash.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(240, 204, 106, 0.3);
+    pointer-events: none;
+    z-index: 9998;
+    animation: flashFade 0.6s ease-out;
+  `;
+  document.body.appendChild(flash);
+  setTimeout(() => flash.remove(), 600);
 }
 
 function goBackTo(idx) {

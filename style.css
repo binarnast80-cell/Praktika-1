@@ -1011,6 +1011,66 @@ body.panel-collapsed .panel-toggle {
     opacity: 0;
 }
 
+/* ── FIREWORKS EFFECT ─────────────────────────── */
+.fireworks-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+.firework-particle {
+    position: absolute;
+    pointer-events: none;
+    font-size: 24px;
+    bottom: -20px;
+}
+
+@keyframes explode {
+    0% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(var(--tx), var(--ty)) scale(0);
+    }
+}
+
+@keyframes pop-up {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    80% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(var(--distance)) scale(0.2);
+    }
+}
+
+@keyframes flashFade {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+.firework-particle.burst {
+    animation: explode 1.2s ease-out forwards;
+}
+
+.firework-particle.pop {
+    animation: pop-up 1.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
     * {
         animation-duration: 0.01ms !important;
