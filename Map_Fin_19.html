@@ -1,11 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Путь Айдоса — Финансовый Центр</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
+    <title>Путь Айданы — Финансовый Центр</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,500;9..40,600;9..40,700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
 </head>
@@ -13,53 +11,47 @@
 
 <div id="header">
     <div>
-        <div id="h-title">Путь <span>Айдоса</span></div>
-        <div class="sub">Астана · от рождения до Финансового центра</div>
+        <div id="h-title">Путь <span>Айданы</span></div>
+        <div class="sub">Жизненный путь · от рождения до первой работы (23+)</div>
     </div>
     <div id="dots"></div>
 </div>
 
 <div id="main">
-    <div id="map-wrap">
-        <div id="map"></div>
-        <div id="map-popup"><div id="map-popup-inner"></div></div>
-        <div id="compact-step" aria-live="polite">
-            <button type="button" id="compact-pin" class="compact-pin" aria-label="Приблизить и открыть описание шага">
-                <span id="compact-pin-emoji"></span>
-            </button>
-            <div id="compact-step-expanded" class="compact-step-expanded">
-            <button type="button" class="compact-nav-btn compact-nav-btn--side" id="cbp" aria-label="Предыдущий шаг">◀</button>
-            <div id="compact-step-card">
-                <div class="compact-step-top">
-                    <span class="compact-age" id="compact-age"></span>
-                    <span class="compact-emoji" id="compact-emoji"></span>
+    <div id="timeline-wrap">
+        <div id="timeline-scroll" class="timeline-scroll">
+            <div id="timeline-track" class="timeline-track">
+                <div class="timeline-line timeline-line--bg" aria-hidden="true"></div>
+                <div id="timeline-line-fill" class="timeline-line timeline-line--fill" aria-hidden="true"></div>
+                <div id="journey-walker" class="journey-walker journey-walker--motion-crawl" aria-hidden="true">
+                    <span class="walker-fx walker-fx--a" aria-hidden="true"></span>
+                    <span class="walker-fx walker-fx--b" aria-hidden="true"></span>
+                    <span class="walker-fx walker-fx--c" aria-hidden="true"></span>
+                    <div class="journey-walker-body">
+                        <img id="walker-img" class="journey-walker-img" src="./image/baby.png" alt="Айдана">
+                    </div>
+                    <span class="journey-walker-shadow"></span>
                 </div>
-                <h3 class="compact-title" id="compact-title"></h3>
-                <p class="compact-desc" id="compact-desc"></p>
-                <div class="compact-fc" id="compact-fc"></div>
-                <div class="compact-choices" id="compact-choices"></div>
-                <span class="compact-prog"><span id="ccn">1</span> · шаг пути</span>
-            </div>
-            <button type="button" class="compact-nav-btn compact-nav-btn--side" id="cbn" aria-label="Следующий шаг">▶</button>
+                <ol id="timeline-nodes" class="timeline-nodes" aria-label="Этапы жизненного пути"></ol>
             </div>
         </div>
-        <button type="button" id="panel-toggle" class="panel-toggle" aria-label="Свернуть панель пути" aria-expanded="true" title="Свернуть панель">⟩</button>
-        <div id="hint">Точка — следующий шаг · Карту можно двигать мышью и тачпадом</div>
+        <div id="fireworks-overlay" class="fireworks-overlay" aria-hidden="true"></div>
     </div>
-    <div id="panel">
+
+    <footer id="bottom-panel">
         <div id="slides-wrap"></div>
+        <div id="step-choices" class="step-choices" aria-live="polite"></div>
         <div id="nav">
-            <button class="nav-btn" id="bp" aria-label="Назад к предыдущему шагу">◀</button>
+            <button class="nav-btn" id="bp" aria-label="Назад">◀</button>
             <div id="prog">
                 <span><span id="cn">1</span>/<span id="tn">?</span></span>
                 <small>ШАГ ПУТИ</small>
             </div>
-            <button class="nav-btn" id="bn" aria-label="Вперед к следующему шагу">▶</button>
+            <button class="nav-btn" id="bn" aria-label="Далее">▶</button>
         </div>
-    </div>
+    </footer>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
