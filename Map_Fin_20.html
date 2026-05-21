@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Путь Айданы — Версия 20</title>
+    <link rel="stylesheet" href="style20.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700&family=Fraunces:wght@600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header id="header">
+        <div>
+            <div id="h-title">Путь <span>Айданы</span></div>
+            <div class="sub">Минималистичный life progression с мягким coverflow</div>
+        </div>
+        <div id="step-indicator"><span id="current-step">1</span>/<span id="total-step">6</span></div>
+    </header>
+
+    <main id="main">
+        <section class="carousel-panel">
+            <div class="carousel-row">
+                <button id="prev-btn" class="nav-button nav-button--side" aria-label="Назад">◀</button>
+                
+                <div class="carousel-window">
+                    <div id="carousel-viewport" class="carousel-viewport">
+                        </div>
+                </div>
+                
+                <button id="next-btn" class="nav-button nav-button--side" aria-label="Вперед">▶</button>
+            </div>
+            
+            <p id="stage-description" class="stage-description"></p>
+        </section>
+
+        <section id="branch-chooser" class="branch-chooser"></section>
+    </main>
+
+    <footer id="footer">
+        <div class="pager">
+            <span class="pager-title">ГЛАВНЫЙ ПУТЬ</span>
+            <span class="pager-value"><span id="cn">1</span> / <span id="tn">6</span></span>
+        </div>
+    </footer>
+
+    <script src="script20.js"></script>
+</body>
+</html>
