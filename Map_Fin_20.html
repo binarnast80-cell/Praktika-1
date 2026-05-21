@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Путь Айданы — Версия 20</title>
     <link rel="stylesheet" href="style20.css">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700&family=Fraunces:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,500;9..40,600;9..40,700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
 </head>
 <body>
     <header id="header">
@@ -29,11 +29,15 @@
                 <button id="next-btn" class="nav-button nav-button--side" aria-label="Вперед">▶</button>
             </div>
             
-            <p id="stage-description" class="stage-description"></p>
-        </section>
+            <div id="branch-chooser" class="branch-chooser"></div>
 
-        <section id="branch-chooser" class="branch-chooser"></section>
+            <div class="description-wrap">
+                <p id="stage-description" class="stage-description"></p>
+            </div>
+        </section>
     </main>
+
+    <div id="fireworks-overlay" class="fireworks-overlay" aria-hidden="true"></div>
 
     <footer id="footer">
         <div class="pager">
