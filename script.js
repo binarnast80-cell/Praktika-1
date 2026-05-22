@@ -591,7 +591,7 @@ function triggerFireworks() {
   }
 
   const flash = document.createElement('div');
-  flash.className = 'fireworks-flash';
+  flash.className = 'ireworks-flashf';
   fireworksOverlay.appendChild(flash);
 
   setTimeout(() => {

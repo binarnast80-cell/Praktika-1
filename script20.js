@@ -27,47 +27,47 @@ const MAIN_STAGES = [
         isBaby: true, 
         desc: 'Рождение Айданы. Первые мгновения жизни и начало заботы о её будущем образовании.', 
         fc: 'Депозит AQYL', 
-        fcHighlight: 'Старт 235 920 ₸ от государства' 
+        fcHighlight: 'Открыли депозит на новорождённого → государство зачислило стартовые 235 920 ₸.' 
     },
     { 
         key: 'kg', 
         emoji: '🧸', 
-        age: '6 лет', 
+        age: '3-6 лет', 
         title: 'Детство', 
         image: CHAR.kg, 
         desc: 'Первые игры, детский сад и кружки. Семья копит накопления на высшее образование Айданы.', 
         fc: 'Депозит AQYL', 
-        fcHighlight: 'Госпремия 5–7% + банк до 13.58%' 
+        fcHighlight: 'Депозит копится: банк начисляет %, государство добавляет премию 5–7% в год.' 
     },
     { 
         key: 'sc', 
         emoji: '📚', 
-        age: '12 лет', 
+        age: '7-11 лет', 
         title: 'Школа', 
         image: CHAR.school, 
         desc: 'Школьные будни, новые знания и увлечения. Деньги на депозите накапливаются с каждым учебным годом.', 
         fc: 'Депозит AQYL', 
-        fcHighlight: 'Капитализация процентов банка и ФЦ' 
+        fcHighlight: 'Госпремия на депозит начисляется каждый год — деньги растут, пока Айдана сидит на уроках.' 
     },
     { 
         key: 'co', 
         emoji: '🏛️', 
-        age: '18 лет', 
+        age: '15-18 лет', 
         title: 'Колледж', 
         image: CHAR.college, 
         desc: 'Выбор будущей профессии и старт самостоятельного быта. Накопленный депозит идёт на оплату колледжа.', 
         fc: 'Образовательный кредит', 
-        fcHighlight: 'Под госгарантию ФЦ без залога' 
+        fcHighlight: 'Накопленный депозит идёт на оплату колледжа. Не хватает — кредит до 10 лет без залога.' 
     },
     { 
         key: 'un', 
         emoji: '🎓', 
-        age: '21 год', 
+        age: '18-22 года', 
         title: 'Университет', 
         image: CHAR.uni, 
         desc: 'Высшее образование. При поступлении на грант накопленный депозит можно снять со всеми премиями государства.', 
         fc: 'AQYL Грант', 
-        fcHighlight: 'Целевое снятие накоплений с премией' 
+        fcHighlight: 'Грант — снял депозит с процентами. Не грант — беззалоговый кредит под госгарантию.' 
     },
     { 
         key: 'fc', 
@@ -77,7 +77,7 @@ const MAIN_STAGES = [
         image: CHAR.work, 
         desc: 'Успешная карьера! Айдана работает в АО «Финансовый центр», помогая новым поколениям казахстанцев учиться.', 
         fc: 'АО «Финансовый центр»', 
-        fcHighlight: 'Инвестиции в образование страны 🇰🇿' 
+        fcHighlight: 'С рождения до диплома — депозит, ваучер, кредит. Незаметно. Именно поэтому Айдана здесь.' 
     }
 ];
 
@@ -89,7 +89,7 @@ const BRANCHES_DATA = {
         image: CHAR.drawing, 
         desc: 'Развитие творческих способностей Айданы через яркие краски и детские рисунки.', 
         fc: 'Депозит AQYL', 
-        fcHighlight: 'Вклад защищён от арестов и взысканий' 
+        fcHighlight: 'Накопления защищены от арестов и списаний — до 10 млн ₸ под госгарантией.' 
     }],
     'sc': [{ 
         id: 'br_music', 
@@ -98,7 +98,7 @@ const BRANCHES_DATA = {
         image: CHAR.music, 
         desc: 'Погружение в традиционную казахскую музыку и развитие музыкального слуха.', 
         fc: 'Защита вклада', 
-        fcHighlight: 'Гарантия сохранности до 10 млн ₸' 
+        fcHighlight: '% по депозиту капают. Никто не тронет — защита от арестов и третьих лиц.' 
     }],
     'co': [{ 
         id: 'br_dorm', 
@@ -116,7 +116,7 @@ const BRANCHES_DATA = {
         image: CHAR.campus, 
         desc: 'Активная социальная, лидерская и культурная жизнь в современном городке университета.', 
         fc: 'Кампус и обучение', 
-        fcHighlight: 'Льготное кредитование без переплат' 
+        fcHighlight: 'Кредит закрывает учёбу. После выпуска — 10 лет на погашение, без штрафов за досрочку.' 
     }]
 };
 
@@ -159,7 +159,7 @@ function initCarousel() {
         const mainCard = document.createElement('div');
         mainCard.className = 'stage-card';
         
-        const charClass = stage.isBaby ? 'stage-character baby-fix' : 'stage-character';
+        const charClass = getCharacterClass(stage);
 
         mainCard.innerHTML = `
             <div class="stage-icon">${stage.emoji}</div>
@@ -167,7 +167,7 @@ function initCarousel() {
                 <span class="stage-age">${stage.age.toUpperCase()}</span>
                 <span class="stage-title">${stage.title}</span>
             </div>
-            <div class="stage-character ${charClass}" style="background-image: url('${stage.image}')"></div>
+            <div class="${charClass}" style="background-image: url('${stage.image}')"></div>
         `;
 
         mainCard.addEventListener('click', () => {
@@ -199,6 +199,23 @@ function getPositionClass(offset) {
     if (offset === 2) return 'next-2';
     if (offset < -2) return 'far-prev';
     return 'far-next';
+}
+
+function getCharacterClass(stage) {
+    if (stage.isBaby) return 'stage-character baby-fix';
+    switch (stage.key) {
+        case 'kg':
+            return 'stage-character stage-character--small';
+        case 'sc':
+            return 'stage-character stage-character--medium';
+        case 'co':
+            return 'stage-character stage-character--medium-lg';
+        case 'un':
+        case 'fc':
+            return 'stage-character stage-character--large';
+        default:
+            return 'stage-character stage-character--medium';
+    }
 }
 
 // Принудительный статический рендер (Self-Healing pass)
@@ -538,17 +555,35 @@ function moveTo(index) {
 
 // Салюты при завершении пути
 function triggerFireworks() {
-    fireworksOverlay.innerHTML = '';
-    for (let i = 0; i < 6; i++) {
-        setTimeout(() => {
-            const flash = document.createElement('div');
-            flash.className = 'fw-flash';
-            flash.style.left = Math.random() * 80 + 10 + 'vw';
-            flash.style.top = Math.random() * 50 + 10 + 'vh';
-            fireworksOverlay.appendChild(flash);
-            setTimeout(() => flash.remove(), 800);
-        }, i * 200);
-    }
+  fireworksOverlay.replaceChildren();
+  fireworksOverlay.classList.add('fireworks-overlay--active');
+  fireworksOverlay.setAttribute('aria-hidden', 'false');
+
+  const emojis = ['🎉', '🎊', '✨', '🌟', '⭐', '💫', '🏆', '🎈', '🎁', '🚀'];
+  for (let i = 0; i < 50; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'firework-particle ' + (Math.random() > 0.5 ? 'burst' : 'pop');
+    particle.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    const angle = (i / 50) * Math.PI * 2;
+    const distance = 200 + Math.random() * 300;
+    particle.style.setProperty('--tx', Math.cos(angle) * distance + 'px');
+    particle.style.setProperty('--ty', -Math.sin(angle) * distance + 'px');
+    particle.style.setProperty('--distance', -(200 + Math.random() * 400));
+    particle.style.setProperty('--particle-delay', String(Math.random() * 0.2));
+    particle.style.setProperty('--particle-left', String(Math.random() * 100));
+    fireworksOverlay.appendChild(particle);
+    setTimeout(() => particle.remove(), 1500);
+  }
+
+    const flash = document.createElement('div');
+  flash.className = 'fireworks-flash';
+  fireworksOverlay.appendChild(flash);
+
+  setTimeout(() => {
+    fireworksOverlay.classList.remove('fireworks-overlay--active');
+    fireworksOverlay.setAttribute('aria-hidden', 'true');
+    fireworksOverlay.replaceChildren();
+  }, 1600);
 }
 
 // Слушатели событий
