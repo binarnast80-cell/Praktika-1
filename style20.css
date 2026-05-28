@@ -6,9 +6,17 @@
     --gold: #d4a84b;
     --gold-bright: #f0cc6a;
     --line: #dde5ef;
-    --shadow: 0 15px 35px rgba(12, 24, 40, 0.06);
-    --shadow-active: 0 25px 50px rgba(12, 24, 40, 0.12);
+    --shadow: 0 10px 24px rgba(12, 24, 40, 0.04);
+    --shadow-active: 0 18px 36px rgba(12, 24, 40, 0.07);
     --radius: 16px;
+
+    /* Cover-flow animation tokens */
+    --ease-cover-flow: cubic-bezier(0.22, 1, 0.36, 1);
+    --dur-cover-flow: 0.7s;
+    --dur-branch: 0.5s;
+
+    /* Carousel geometry */
+    --stack-w: 250px;
 }
 
 * {
@@ -21,12 +29,30 @@ body {
     min-height: 100vh;
     font-family: 'DM Sans', system-ui, sans-serif;
     color: var(--ink);
-    background: radial-gradient(circle at top left, rgba(46, 196, 175, 0.04), transparent 35%),
-                radial-gradient(circle at bottom right, rgba(255, 143, 171, 0.05), transparent 35%),
+    background: radial-gradient(circle at top left, rgba(46, 196, 175, 0.02), transparent 30%),
+                radial-gradient(circle at 50% 10%, rgba(212,168,75,0.08), transparent 22%),
+                radial-gradient(circle at 90% 25%, rgba(255, 255, 255, 0.12), transparent 22%),
+                radial-gradient(circle at 50% 85%, rgba(12,24,40,0.04), transparent 28%),
                 var(--bg);
     display: grid;
     grid-template-rows: auto 1fr auto;
     overflow-x: hidden;
+    position: relative;
+}
+
+body::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 16%;
+    width: 520px;
+    height: 420px;
+    transform: translateX(-50%);
+    background: radial-gradient(circle at center, rgba(212,168,75,0.08), transparent 40%);
+    pointer-events: none;
+    filter: blur(24px);
+    opacity: 0.75;
+    z-index: 0;
 }
 
 #header {
@@ -34,8 +60,8 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(4px);
     border-bottom: 1px solid rgba(12, 24, 40, 0.04);
     z-index: 50;
 }
@@ -64,6 +90,7 @@ body {
     align-items: center;
     justify-content: center;
     padding: 10px 20px;
+    position: relative;
 }
 
 .carousel-panel {
@@ -71,6 +98,36 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: relative;
+    padding-top: 26px;
+    z-index: 1;
+}
+
+.carousel-panel::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 28px;
+    width: 360px;
+    height: 320px;
+    transform: translateX(-50%);
+    background: radial-gradient(circle at 50% 16%, rgba(212,168,75,0.12), transparent 36%);
+    filter: blur(24px);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.carousel-panel::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 420px;
+    height: 90px;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, rgba(255,255,255,0.18), transparent 100%);
+    pointer-events: none;
+    z-index: -1;
 }
 
 .carousel-row {
@@ -94,6 +151,33 @@ body {
     overflow: visible;
 }
 
+.carousel-window::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -8px;
+    width: 2px;
+    height: 84px;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, rgba(12,24,40,0.08), rgba(12,24,40,0.015));
+    pointer-events: none;
+}
+
+.carousel-window::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -10px;
+    width: 14px;
+    height: 14px;
+    transform: translateX(-50%);
+    border-radius: 999px;
+    background: rgba(212,168,75,0.18);
+    box-shadow: 0 0 0 10px rgba(212,168,75,0.03);
+    pointer-events: none;
+    z-index: 0;
+}
+
 .carousel-viewport {
     position: relative;
     width: 100%;
@@ -101,79 +185,103 @@ body {
     transform-style: preserve-3d;
 }
 
-/* Вертикальный стек (Основная карточка) */
+/* ── Cover-Flow: variable-driven position system ──
+   Each position class overrides --cf-* variables.
+   The base rule composes the transform from those variables.
+   filter, visibility, and pointer-events stay explicit
+   per state for GPU compositing safety.                   */
+
 .stage-stack {
     position: absolute;
     left: 50%;
     top: 35px;
-    width: 250px;
-    margin-left: -125px;
+    width: var(--stack-w);
+    margin-left: calc(var(--stack-w) / -2);
     transform-style: preserve-3d;
     display: flex;
     flex-direction: column;
     gap: 12px;
     will-change: transform, opacity, filter;
-    transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+
+    /* Cover-flow position defaults (overridden per state) */
+    --cf-x: 0;
+    --cf-ry: 0deg;
+    --cf-scale: 1;
+    --cf-opacity: 0;
+    --cf-z: 1;
+
+    transform: translateX(var(--cf-x)) rotateY(var(--cf-ry)) scale(var(--cf-scale));
+    opacity: var(--cf-opacity);
+    z-index: var(--cf-z);
+    pointer-events: none;
+    visibility: hidden;
+
+    transition: transform var(--dur-cover-flow) var(--ease-cover-flow),
                 opacity 0.6s ease,
                 filter 0.6s ease;
 }
 
 /* Анимация Cover Flow карточек с мягкой перспективой */
+
+/* Center — compositing-critical, filter:none explicit */
 .stage-stack.active {
-    transform: translateX(0) scale(1.05);
-    opacity: 1;
+    --cf-scale: 1.05;
+    --cf-opacity: 1;
+    --cf-z: 30;
     filter: none;
+    visibility: visible;
     pointer-events: auto;
 }
 
+/* Immediate neighbors — slight perspective tilt */
 .stage-stack.prev-1 {
-    transform: translateX(-190px) rotateY(6deg) scale(0.86);
-    opacity: 0.5;
-    filter: grayscale(20%) blur(0.5px);
-    pointer-events: none;
+    --cf-x: -180px;
+    --cf-ry: 5deg;
+    --cf-scale: 0.92;
+    --cf-opacity: 0.72;
+    --cf-z: 20;
+    filter: grayscale(18%);
+    visibility: visible;
 }
 
 .stage-stack.next-1 {
-    transform: translateX(190px) rotateY(-6deg) scale(0.86);
-    opacity: 0.5;
-    filter: grayscale(20%) blur(0.5px);
-    pointer-events: none;
+    --cf-x: 180px;
+    --cf-ry: -5deg;
+    --cf-scale: 0.92;
+    --cf-opacity: 0.72;
+    --cf-z: 20;
+    filter: grayscale(18%);
+    visibility: visible;
 }
 
+/* Second neighbors — deeper, faded */
 .stage-stack.prev-2 {
-    transform: translateX(-310px) rotateY(8deg) scale(0.72);
-    opacity: 0;
-    z-index: 2;
-    filter: grayscale(50%) blur(1px);
-    pointer-events: none;
-    visibility: hidden;
+    --cf-x: -280px;
+    --cf-ry: 7deg;
+    --cf-scale: 0.84;
+    --cf-z: 10;
+    filter: grayscale(38%);
 }
 
 .stage-stack.next-2 {
-    transform: translateX(310px) rotateY(-8deg) scale(0.72);
-    opacity: 0;
-    z-index: 2;
-    filter: grayscale(50%) blur(1px);
-    pointer-events: none;
-    visibility: hidden;
+    --cf-x: 280px;
+    --cf-ry: -7deg;
+    --cf-scale: 0.84;
+    --cf-z: 10;
+    filter: grayscale(38%);
 }
 
+/* Far off-screen */
 .stage-stack.far-prev {
-    transform: translateX(-400px) scale(0.6);
-    opacity: 0;
-    z-index: 1;
-    filter: grayscale(80%) blur(1.5px);
-    pointer-events: none;
-    visibility: hidden;
+    --cf-x: -360px;
+    --cf-scale: 0.78;
+    filter: grayscale(62%);
 }
 
 .stage-stack.far-next {
-    transform: translateX(400px) scale(0.6);
-    opacity: 0;
-    z-index: 1;
-    filter: grayscale(80%) blur(1.5px);
-    pointer-events: none;
-    visibility: hidden;
+    --cf-x: 360px;
+    --cf-scale: 0.78;
+    filter: grayscale(62%);
 }
 
 /* Стилизация карточек */
@@ -182,7 +290,7 @@ body {
     width: 100%;
     height: 84px;
     background: var(--surface);
-    border: 1px solid var(--line);
+    border: 1px solid rgba(12,24,40,0.08);
     border-radius: var(--radius);
     padding: 12px 16px;
     display: flex;
@@ -191,28 +299,43 @@ body {
     box-shadow: var(--shadow);
     transform-style: preserve-3d;
     will-change: transform, opacity, filter;
-    transition: box-shadow 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: box-shadow 0.65s var(--ease-cover-flow), border-color 0.65s var(--ease-cover-flow), background 0.65s var(--ease-cover-flow);
 }
 
 .stage-stack.active .stage-card {
-    box-shadow: var(--shadow-active);
+    box-shadow: 0 26px 60px rgba(12,24,40,0.12);
+    border-color: rgba(212,168,75,0.18);
+    background: linear-gradient(180deg, #ffffff 0%, #f8f8fb 100%);
 }
 
 /* Плавный въезд и выезд ветвления как Sibling вьюпорта */
 .stage-card--branch {
     position: absolute;
     left: 50%;
-    margin-left: -125px;
+    margin-left: calc(var(--stack-w) / -2);
     top: 165px; /* опускаем дальше от основной карточки */
-    width: 250px;
+    width: var(--stack-w);
     z-index: 25; /* Позиционируется между активной (30) и соседями (20) */
-    border: 1px dashed var(--gold);
-    background: linear-gradient(135deg, #ffffff 0%, #fffdf4 100%);
+    border: 1px solid rgba(212,168,75,0.24);
+    background: rgba(255,250,240,0.92);
     opacity: 0;
     transform: translateY(-40px) scale(0.92);
     pointer-events: none;
-    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    transition: transform var(--dur-branch) var(--ease-cover-flow),
                 opacity 0.4s ease;
+}
+
+.stage-card--branch::before {
+    content: '';
+    position: absolute;
+    top: -16px;
+    left: 50%;
+    width: 2px;
+    height: 14px;
+    transform: translateX(-50%);
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(212,168,75,0.3), transparent 100%);
+    pointer-events: none;
 }
 
 .stage-card--branch.show {
@@ -221,17 +344,35 @@ body {
     pointer-events: auto;
 }
 
+/* ── Card inner elements: shared translateZ depth ── */
+.stage-icon,
+.stage-info {
+    transform: translateZ(var(--card-z, 15px));
+}
+
 .stage-icon {
     font-size: 1.6rem;
     flex-shrink: 0;
-    transform: translateZ(15px);
+}
+
+.stage-icon-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: rgba(12,24,40,0.04);
+    border: 1px solid rgba(12,24,40,0.06);
+    color: #22303a;
+    font-weight: 700;
+    font-size: 0.78rem;
 }
 
 .stage-info {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    transform: translateZ(15px);
 }
 
 .stage-age {
@@ -248,7 +389,9 @@ body {
     color: var(--ink);
 }
 
-/* Персонаж поверх блока по оси Z */
+/* ── Персонаж поверх блока по оси Z ──
+   --char-z controls depth, --char-scale controls size.
+   Only --char-scale varies per size modifier.           */
 .stage-character {
     position: absolute;
     right: -18px;
@@ -260,37 +403,30 @@ body {
     background-size: contain;
     image-rendering: pixelated;
     pointer-events: none;
-    transform: translateZ(35px) scale(1.05);
     z-index: 5;
+
+    --char-z: 35px;
+    --char-scale: 1.05;
+    transform: translateZ(var(--char-z)) scale(var(--char-scale));
 }
 
-.stage-character--small {
-    transform: translateZ(35px) scale(1);
-}
-
-.stage-character--medium {
-    transform: translateZ(35px) scale(1.08);
-}
-
-.stage-character--medium-lg {
-    transform: translateZ(35px) scale(1.15);
-}
-
-.stage-character--large {
-    transform: translateZ(35px) scale(1.22);
-}
+.stage-character--small     { --char-scale: 1; }
+.stage-character--medium    { --char-scale: 1.08; }
+.stage-character--medium-lg { --char-scale: 1.15; }
+.stage-character--large     { --char-scale: 1.22; }
 
 /* Масштабирование младенца, чтоб не казался огромным */
 .stage-character.baby-fix {
-    transform: translateZ(35px) scale(0.72);
+    --char-scale: 0.72;
     bottom: -10px;
     right: -12px;
 }
 
 /* Навигация */
 .nav-button {
-    background: var(--surface);
-    border: 1px solid var(--line);
+    position: relative;
+    background: rgba(255,255,255,0.92);
+    border: 1px solid rgba(12,24,40,0.08);
     padding: 12px;
     border-radius: 50%;
     width: 44px;
@@ -299,11 +435,31 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: var(--shadow);
-    transition: transform 0.2s, border-color 0.2s;
+    box-shadow: 0 16px 36px rgba(12,24,40,0.08);
+    transition: transform 0.25s var(--ease-cover-flow), border-color 0.25s ease, box-shadow 0.25s ease;
 }
-.nav-button:hover:not(:disabled) { transform: scale(1.08); border-color: var(--gold); }
-.nav-button:disabled { opacity: 0.3; cursor: not-allowed; }
+.nav-button::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1px rgba(212,168,75,0.08);
+    pointer-events: none;
+}
+
+#prev-btn:hover:not(:disabled) {
+    transform: translate(-2px, -1px);
+    border-color: rgba(212,168,75,0.4);
+    box-shadow: -4px 14px 34px rgba(12,24,40,0.12);
+}
+
+#next-btn:hover:not(:disabled) {
+    transform: translate(2px, -1px);
+    border-color: rgba(212,168,75,0.4);
+    box-shadow: 4px 14px 34px rgba(12,24,40,0.12);
+}
+
+.nav-button:disabled { opacity: 0.28; cursor: not-allowed; }
 
 /* Кнопочка-иконка строго над текстом */
 .branch-chooser {
@@ -345,23 +501,60 @@ body {
 /* Стабильное поле описания */
 .description-wrap {
     width: 100%;
-    max-width: 550px;
-    min-height: 90px;
+    max-width: 520px;
+    min-height: 72px;
     display: flex;
     align-items: flex-start;
     justify-content: center;
+    position: relative;
+    padding-top: 18px;
+}
+
+.description-wrap::before {
+    content: '';
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 18px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(212,168,75,0.48), rgba(212,168,75,0.12) 40%, transparent 100%);
+    pointer-events: none;
+    opacity: 0.8;
+    z-index: -1;
+}
+
+.description-wrap::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: rgba(212,168,75,0.12);
+    box-shadow: 0 0 0 14px rgba(212,168,75,0.03);
+    pointer-events: none;
 }
 
 .stage-description {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     text-align: center;
-    font-size: 0.9rem;
-    line-height: 1.5;
+    font-size: 0.88rem;
+    line-height: 1.55;
     color: var(--ink-soft);
     width: 100%;
+    background: rgba(255,255,255,0.42);
+    border: 1px solid rgba(12,24,40,0.045);
+    border-radius: 20px;
+    padding: 14px 18px;
+    box-shadow: 0 14px 32px rgba(12,24,40,0.03);
+    backdrop-filter: blur(10px);
 }
 
 .desc-text {
@@ -381,27 +574,40 @@ body {
 .desc-badge {
     font-size: 0.72rem;
     font-weight: 700;
-    padding: 5px 12px;
-    border-radius: 20px;
+    padding: 4px 10px;
+    border-radius: 12px;
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 8px;
     letter-spacing: 0.02em;
-    box-shadow: 0 2px 6px rgba(12, 24, 40, 0.02);
-    transition: all 0.2s ease;
+    box-shadow: none;
+    transition: all 0.18s ease;
+    background: rgba(255,255,255,0.72);
+    border: 1px solid rgba(12,24,40,0.08);
+    color: #24303d;
+    position: relative;
+}
+
+.desc-badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(212,168,75,0.8);
+    display: inline-block;
+    flex-shrink: 0;
 }
 
 .desc-badge--service {
-    background: rgba(12, 24, 40, 0.03);
-    border: 1px solid rgba(212, 168, 75, 0.4);
-    background: rgba(212, 168, 75, 0.05);
-    color: #8c6621;
+    background: rgba(212,168,75,0.12);
+    border-color: rgba(212,168,75,0.15);
+    color: #2e2a1e;
 }
 
 .desc-badge--benefit {
-    background: rgba(46, 196, 175, 0.08);
-    border: 1px solid rgba(46, 196, 175, 0.3);
-    color: #1a7d6f;
+    background: rgba(12,24,40,0.06);
+    border-color: rgba(12,24,40,0.09);
+    color: #233040;
 }
 
 .fireworks-overlay {
@@ -419,9 +625,15 @@ body {
 .firework-particle {
     position: absolute;
     pointer-events: none;
-    font-size: 24px;
-    bottom: -20px;
+    bottom: -10px;
     left: calc(var(--particle-left, 50) * 1%);
+    will-change: transform, opacity;
+    display: block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--gold-bright);
+    transform-origin: center center;
 }
 
 .firework-particle.burst {
@@ -471,7 +683,14 @@ body {
     100% { opacity: 0; }
 }
 
-#footer { padding: 16px; display: flex; justify-content: center; }
+#footer {
+    padding: 18px 16px 22px;
+    display: flex;
+    justify-content: center;
+    background: rgba(255,255,255,0.68);
+    border-top: 1px solid rgba(12,24,40,0.05);
+    backdrop-filter: blur(10px);
+}
 .pager { display: grid; gap: 2px; text-align: center; font-size: 0.7rem; color: var(--ink-soft); }
-.pager-title { letter-spacing: 0.1em; font-weight: 700; }
+.pager-title { letter-spacing: 0.1em; font-weight: 700; text-transform: uppercase; }
 .pager-value { color: var(--ink); font-size: 0.9rem; font-weight: 700; }

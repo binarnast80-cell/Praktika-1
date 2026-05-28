@@ -20,7 +20,7 @@ const CHAR = {
 const MAIN_STAGES = [
     { 
         key: 'rd', 
-        emoji: '👶', 
+        emoji: '', 
         age: '0 лет', 
         title: 'Роддом', 
         image: CHAR.baby, 
@@ -31,7 +31,7 @@ const MAIN_STAGES = [
     },
     { 
         key: 'kg', 
-        emoji: '🧸', 
+        emoji: '', 
         age: '3-6 лет', 
         title: 'Детство', 
         image: CHAR.kg, 
@@ -41,7 +41,7 @@ const MAIN_STAGES = [
     },
     { 
         key: 'sc', 
-        emoji: '📚', 
+        emoji: '', 
         age: '7-11 лет', 
         title: 'Школа', 
         image: CHAR.school, 
@@ -51,7 +51,7 @@ const MAIN_STAGES = [
     },
     { 
         key: 'co', 
-        emoji: '🏛️', 
+        emoji: '', 
         age: '15-18 лет', 
         title: 'Колледж', 
         image: CHAR.college, 
@@ -61,7 +61,7 @@ const MAIN_STAGES = [
     },
     { 
         key: 'un', 
-        emoji: '🎓', 
+        emoji: '', 
         age: '18-22 года', 
         title: 'Университет', 
         image: CHAR.uni, 
@@ -71,7 +71,7 @@ const MAIN_STAGES = [
     },
     { 
         key: 'fc', 
-        emoji: '💼', 
+        emoji: '', 
         age: '23+ года', 
         title: 'Работа', 
         image: CHAR.work, 
@@ -85,7 +85,7 @@ const BRANCHES_DATA = {
     'kg': [{ 
         id: 'br_draw', 
         title: 'Кружок рисования', 
-        emoji: '🎨', 
+        emoji: '', 
         image: CHAR.drawing, 
         desc: 'Развитие творческих способностей Айданы через яркие краски и детские рисунки.', 
         fc: 'Депозит AQYL', 
@@ -94,7 +94,7 @@ const BRANCHES_DATA = {
     'sc': [{ 
         id: 'br_music', 
         title: 'Занятия домброй', 
-        emoji: '🪕', 
+        emoji: '', 
         image: CHAR.music, 
         desc: 'Погружение в традиционную казахскую музыку и развитие музыкального слуха.', 
         fc: 'Защита вклада', 
@@ -103,7 +103,7 @@ const BRANCHES_DATA = {
     'co': [{ 
         id: 'br_dorm', 
         title: 'Общежитие', 
-        emoji: '🏢', 
+        emoji: '', 
         image: CHAR.dorm, 
         desc: 'Опыт самостоятельного быта и выстраивания отношений в студенческом общежитии колледжа.', 
         fc: 'Поддержка студентов', 
@@ -112,7 +112,7 @@ const BRANCHES_DATA = {
     'un': [{ 
         id: 'br_campus', 
         title: 'Студенческий кампус', 
-        emoji: '🌿', 
+        emoji: '', 
         image: CHAR.campus, 
         desc: 'Активная социальная, лидерская и культурная жизнь в современном городке университета.', 
         fc: 'Кампус и обучение', 
@@ -162,7 +162,7 @@ function initCarousel() {
         const charClass = getCharacterClass(stage);
 
         mainCard.innerHTML = `
-            <div class="stage-icon">${stage.emoji}</div>
+            <div class="stage-icon"><span class="stage-icon-label">${getIconLabel(stage)}</span></div>
             <div class="stage-info">
                 <span class="stage-age">${stage.age.toUpperCase()}</span>
                 <span class="stage-title">${stage.title}</span>
@@ -218,6 +218,26 @@ function getCharacterClass(stage) {
     }
 }
 
+function getIconLabel(stage) {
+    const map = {
+        rd: 'РД',
+        kg: 'ДТ',
+        sc: 'ШК',
+        co: 'КЛ',
+        un: 'УН',
+        fc: 'РБ'
+    };
+    return map[stage.key] || stage.title.slice(0,2).toUpperCase();
+}
+
+function getBranchIconLabel(branch) {
+    // Use initials from branch title (first letters of up to two words)
+    const parts = branch.title.split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return 'ALT';
+    if (parts.length === 1) return parts[0].slice(0,2).toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+}
+
 // Принудительный статический рендер (Self-Healing pass)
 function repairRender() {
     MAIN_STAGES.forEach((stage, idx) => {
@@ -261,7 +281,7 @@ function updateBranchCardContent(branchId) {
     const branchInfo = (BRANCHES_DATA[currentStage.key] || []).find(b => b.id === branchId);
     if (branchInfo) {
         siblingBranchCardEl.innerHTML = `
-            <div class="stage-icon">${branchInfo.emoji}</div>
+            <div class="stage-icon"><span class="stage-icon-label">${getBranchIconLabel(branchInfo)}</span></div>
             <div class="stage-info">
                 <span class="stage-age">АЛЬТЕРНАТИВА</span>
                 <span class="stage-title">${branchInfo.title}</span>
@@ -298,8 +318,8 @@ function renderDescriptionWrap() {
         if (fcService && fcBenefit) {
             badgeHtml = `
                 <div class="desc-fc-badges">
-                    <span class="desc-badge desc-badge--service">🏦 ${fcService}</span>
-                    <span class="desc-badge desc-badge--benefit">✨ ${fcBenefit}</span>
+                    <span class="desc-badge desc-badge--service">${fcService}</span>
+                    <span class="desc-badge desc-badge--benefit">${fcBenefit}</span>
                 </div>
             `;
         }
@@ -328,16 +348,15 @@ function dispatch(action, payload) {
     switch (action) {
         case 'MOVE_CAROUSEL':
             if (state.selectedBranchId) {
-                // Последовательное закрытие ветки -> вращение
-                state.currentState = 'BRANCH_CLOSING';
-                state.currentOwner = 'BRANCH';
+                // Параллельное скрытие ветки и движение карусели
+                state.currentState = 'CAROUSEL_TRANSITION';
+                state.currentOwner = 'CAROUSEL';
                 state.selectedBranchId = null;
 
                 runBranchTransition(transitionId, 'hide', () => {
-                    state.currentState = 'CAROUSEL_TRANSITION';
-                    state.currentOwner = 'CAROUSEL';
-                    runCarouselTransition(transitionId, payload.targetIndex);
+                    // Ничего не делаем: движение уже запущено
                 });
+                runCarouselTransition(transitionId, payload.targetIndex);
             } else {
                 state.currentState = 'CAROUSEL_TRANSITION';
                 state.currentOwner = 'CAROUSEL';
@@ -524,7 +543,7 @@ function renderBranchButtons() {
         btn.className = 'branch-btn';
         if (state.selectedBranchId === branch.id) btn.classList.add('active');
         
-        btn.innerHTML = `<span>${branch.emoji}</span> ${branch.title}`;
+        btn.innerHTML = `<span class="branch-title">${branch.title}</span>`;
         
         btn.addEventListener('click', () => {
             dispatch('TOGGLE_BRANCH', { branchId: branch.id });
@@ -559,21 +578,27 @@ function triggerFireworks() {
   fireworksOverlay.classList.add('fireworks-overlay--active');
   fireworksOverlay.setAttribute('aria-hidden', 'false');
 
-  const emojis = ['🎉', '🎊', '✨', '🌟', '⭐', '💫', '🏆', '🎈', '🎁', '🚀'];
-  for (let i = 0; i < 50; i++) {
-    const particle = document.createElement('div');
-    particle.className = 'firework-particle ' + (Math.random() > 0.5 ? 'burst' : 'pop');
-    particle.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-    const angle = (i / 50) * Math.PI * 2;
-    const distance = 200 + Math.random() * 300;
-    particle.style.setProperty('--tx', Math.cos(angle) * distance + 'px');
-    particle.style.setProperty('--ty', -Math.sin(angle) * distance + 'px');
-    particle.style.setProperty('--distance', -(200 + Math.random() * 400));
-    particle.style.setProperty('--particle-delay', String(Math.random() * 0.2));
-    particle.style.setProperty('--particle-left', String(Math.random() * 100));
-    fireworksOverlay.appendChild(particle);
-    setTimeout(() => particle.remove(), 1500);
-  }
+    const palette = ['#f0cc6a', '#d4a84b', '#a3d7cc', '#f2c6c6', '#9fbbe6'];
+    for (let i = 0; i < 60; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'firework-particle ' + (Math.random() > 0.6 ? 'burst' : 'pop');
+        // visual particle (dot or small rectangle)
+        const size = 6 + Math.round(Math.random() * 10);
+        particle.style.width = size + 'px';
+        particle.style.height = (size + (Math.random() > 0.7 ? 2 : 0)) + 'px';
+        particle.style.borderRadius = (Math.random() > 0.6 ? '2px' : '50%');
+        particle.style.backgroundColor = palette[Math.floor(Math.random() * palette.length)];
+
+        const angle = (i / 60) * Math.PI * 2 + (Math.random() - 0.5) * 0.6;
+        const distance = 180 + Math.random() * 320;
+        particle.style.setProperty('--tx', Math.cos(angle) * distance + 'px');
+        particle.style.setProperty('--ty', -Math.sin(angle) * distance + 'px');
+        particle.style.setProperty('--distance', -(200 + Math.random() * 400));
+        particle.style.setProperty('--particle-delay', String(Math.random() * 0.25));
+        particle.style.setProperty('--particle-left', String(Math.random() * 100));
+        fireworksOverlay.appendChild(particle);
+        setTimeout(() => particle.remove(), 1600);
+    }
 
     const flash = document.createElement('div');
   flash.className = 'fireworks-flash';

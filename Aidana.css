@@ -1,0 +1,199 @@
+:root{
+  --max-width:720px;
+  --accent:#6b8cff;
+  --muted:#7a7a7a;
+  --danger:#ff6b6b;
+}
+*{box-sizing:border-box}
+html,body{height:100%;}
+body{
+  margin:0;
+  font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background:transparent;
+  color:#111;
+  -webkit-font-smoothing:antialiased;
+}
+.life-journey{
+  max-width:var(--max-width);
+  margin:18px auto;
+  padding:18px;
+  background:transparent;
+}
+.viewport{
+  position:relative;
+  width:100%;
+  height:800px;
+}
+.world{
+  position:absolute;
+  bottom:0;
+  left:0;
+  width:100%;
+  height:100%;
+  transition:transform 800ms cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.life-stage{
+  position:absolute;
+  left:0;
+  width:100%;
+  height:100%;
+}
+.stage-building{
+  width:280px;
+  height:auto;
+  object-fit:contain;
+  image-rendering: pixelated;
+  filter: saturate(0.95) contrast(0.98);
+}
+.building-area{
+  position:absolute;
+  right:calc(50% + 88px);
+  bottom:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+}
+.platform-wrap{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  bottom:0;
+  width:140px;
+  max-width:60%;
+}
+.city-platform{
+  width:100%;
+  height:auto;
+  display:block;
+  image-rendering: pixelated;
+}
+.player-character{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  bottom:calc(80px + var(--player-stage-y, 0px));
+  width:96px;
+  height:96px;
+  pointer-events:none;
+  transition: bottom 800ms cubic-bezier(0.25, 1, 0.5, 1);
+  z-index: 10;
+}
+.player-sprite{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  image-rendering: pixelated;
+  transform: scale(var(--player-scale, 1));
+  transform-origin: bottom center;
+}
+.player-character.is-jumping .player-sprite{
+  animation:jump 800ms forwards;
+}
+@keyframes jump{
+  0%{
+    transform:translateY(0) scale(var(--player-scale, 1));
+    animation-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
+  }
+  50%{
+    transform:translateY(-100px) scale(var(--player-scale, 1));
+    animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0);
+  }
+  100%{
+    transform:translateY(0) scale(var(--player-scale, 1));
+  }
+}
+
+/* Стилизация интерактивных кнопок */
+.jump-btn, .close-btn, .reset-btn{
+  border:0;
+  color:#fff;
+  padding:10px 18px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:700;
+  transition: transform 100ms ease;
+}
+.jump-btn { background:var(--accent); }
+.close-btn { background:var(--accent); width: 100%; }
+.reset-btn { background:var(--danger); width: 100%; }
+
+.jump-btn:active, .close-btn:active, .reset-btn:active{transform:translateY(1px)}
+
+/* Динамическая кнопка прыжка без эффекта скольжения по вертикали */
+.dynamic-jump {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(-45px + var(--jump-btn-y, 0px));
+  z-index: 15;
+  
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 400ms ease, visibility 400ms ease;
+}
+.dynamic-jump.is-visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Центрированный попап смещен чуть выше кнопки прыжка */
+.stage-popup {
+  display: none;
+  position: absolute;
+  margin: 0;
+  left: calc(50% + 75px);
+  bottom: calc(90px + var(--popup-y, 0px)); 
+  border: none;
+  border-radius: 16px;
+  padding: 20px;
+  width: 300px;
+  z-index: 20;
+  background: linear-gradient(145deg, #ffffff, #f3f6ff);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15), inset 0 2px 0 rgba(255,255,255,1);
+  color: #222;
+  transition: bottom 600ms ease;
+}
+.stage-popup[open] {
+  display: block;
+}
+.popup-content h3{
+  margin:0 0 8px 0;
+  font-size:20px;
+  color: var(--accent);
+}
+.popup-text{
+  color:#444;
+  line-height:1.5;
+  font-size:15px;
+}
+.popup-text p {
+  margin: 0 0 8px 0;
+}
+.popup-text p:last-child {
+  margin: 0;
+}
+
+.popup-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+/* Мобильный адаптив */
+@media (max-width:520px){
+  .viewport{height: 700px}
+  .stage-building{width:180px}
+  .building-area{right:calc(50% + 58px)}
+  .platform-wrap{width:100px}
+  .player-character{width:72px;height:72px;bottom:calc(50px + var(--player-stage-y, 0px))}
+  .dynamic-jump {
+    bottom: calc(-35px + var(--jump-btn-y, 0px));
+  }
+  .stage-popup{
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    bottom: 20px;
+  }
+}
